@@ -124,7 +124,7 @@ namespace RGG2010
             }
         }
 
-        // Lifted straight from http://www.gamedev.net/community/forums/topic.asp?topic_id=324883
+        // Lifted straight from http://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect/1968345#1968345
         internal bool CheckCrosses(Vector2 start, Vector2 end)
         {
             Vector2 left = LeftEnd;
