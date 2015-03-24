@@ -13,3 +13,5 @@ As of now there are 5 tracks (number keys 1-5).
 Track editing is very rough, so is only visible in a debug build at the moment. If there is interest I might get around to exposing it.
 
 Automatically exported from code.google.com/p/scrace
+
+Since XNA is clearly dead at this point, one possibility is to try and turn this into an HTML5 game.
