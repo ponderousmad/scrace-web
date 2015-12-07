@@ -45,7 +45,7 @@ function Starfield(width, height, density) {
         {
             var size = new Point(image.width, image.height)
             var scaleFactor = 1.0 - this.distance;
-            var offsetLocation = addPoints(this.location, addPoints(scalePoint(offset, scaleFactor), size);
+            var offsetLocation = addPoints(this.location, addPoints(scalePoint(offset, scaleFactor), size));
             var distanceSize = scalePoint(tileSize, 1 /  scaleFactor);
             var tiledX = offsetLocation.x % distanceSize.x;
             if(tiledX < 0)
@@ -64,7 +64,7 @@ function Starfield(width, height, density) {
     function populate() {
         var count = (int)(this.width * this.height * density);
         var imageCount = this.images.length;
-        for (int i = 0; i < count; ++i)
+        for (var i = 0; i < count; ++i)
         {
             var x = getRandomInt(0, width);
             var y = getRandomInt(0, height);
