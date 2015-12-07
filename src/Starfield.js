@@ -4,7 +4,7 @@
 }
 
 function scalePoint(p, s) {
-    return new Point(p.x * s, p.y + s);
+    return new Point(p.x * s, p.y * s);
 }
 
 function addPoints(a, b) {
@@ -20,6 +20,7 @@ function Starfield(width, height, density) {
     this.images = [];
     this.maxSize = new Point(0,0);
     this.size = new Point(width, height);
+    this.density = density;
     
     this.frequency = {
         "Galaxy": 1,
@@ -31,17 +32,15 @@ function Starfield(width, height, density) {
         "StarSmallBlue": 100,
         "StarYellow": 1000,
     }
-    this.toLoad = Object.keys(frequency).length;
-    for (var imageName in this.frequency) {
-        addImage(imageName, this.frequency[imageName]);
-    }
+    
+    this.toLoad = Object.keys(this.frequency).length;
 
     function Visual(image, location, distance) {
         this.location = location;
         this.distance = distance;
         this.image = image;
 
-        function tiledLocation(offset, tileSize)
+        this.tiledLocation = function(offset, tileSize)
         {
             var size = new Point(image.width, image.height)
             var scaleFactor = 1.0 - this.distance;
@@ -61,8 +60,9 @@ function Starfield(width, height, density) {
         }
     }
   
-    function populate() {
-        var count = (int)(this.width * this.height * density);
+    this.populate = function() {
+        var count = Math.floor(this.size.x * this.size.y * density);
+        console.log("Populating starfield with ", count, " entities");
         var imageCount = this.images.length;
         for (var i = 0; i < count; ++i)
         {
@@ -75,16 +75,17 @@ function Starfield(width, height, density) {
         }
     }
 
-    function addImage(name, frequency) {
+    this.addImage = function(name, frequency) {
         var image = new Image();
         var starfield = this;
         image.onload = function() {
+            console.log("Loaded ", name);
             starfield.maxSize.x = Math.max(starfield.maxSize.x, image.width);
             starfield.maxSize.y = Math.max(starfield.maxSize.y, image.height);
             
             for (var i = 0; i < frequency; ++i)
             {
-                starfield.images.Add(image);
+                starfield.images.push(image);
             }
             starfield.toLoad -= 1;
             if(starfield.toLoad == 0) {
@@ -94,17 +95,38 @@ function Starfield(width, height, density) {
         image.src = "/scrace/images/starfield/" + name + ".png";
     }
 
-    function draw(canvas, offset, width, height)
+    this.draw = function(canvas, offset, width, height)
     {
+        var context = canvas.getContext("2d");
+        context.fillStyle = "black";
+        context.fillRect(0, 0, width, height);
+
         for (var i = 0; i < this.visuals.length; ++i)
         {
-            var v = visuals[i];
-            var location = v.TiledLocation(offset, this.size);
+            var v = this.visuals[i];
+            var location = v.tiledLocation(offset, this.size);
             if (location.x < -this.maxSize.x || width < location.x)
                 continue;
             if (location.Y < -this.maxSize.Y || height < location.y)
                 continue;
-            canvas.drawImage(v.image, location.x, location.y);
+            context.drawImage(v.image, location.x, location.y);
         }
     }
+    
+    for (var imageName in this.frequency) {
+        console.log("Queueing ", imageName);
+        this.addImage(imageName, this.frequency[imageName]);
+    }
 }
+
+window.onload = function(e) {
+    console.log("window.onload", e, Date.now())
+    var canvas = document.getElementById("canvas");
+    var starfield = new Starfield(5000, 5000, 0.0007);
+    var offset = new Point(0,0);
+    window.setInterval(function() {
+        starfield.draw(canvas, offset, canvas.width, canvas.height)
+        offset.x += 1;
+        offset.y += 1;
+    }, 16);
+};
