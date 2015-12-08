@@ -1,4 +1,6 @@
-﻿function Point(x, y) {
+﻿"use strict";
+
+function Point(x, y) {
     this.x = x;
     this.y = y;
 }
@@ -54,7 +56,7 @@ function Starfield(width, height, density) {
             var tiledY = offsetLocation.y % distanceSize.y;
             if(tiledY < 0)
             {
-                tiledY += distanceSize.Y;
+                tiledY += distanceSize.y;
             }
             return new Point(tiledX - size.x, tiledY - size.y);
         }
@@ -107,7 +109,7 @@ function Starfield(width, height, density) {
             var location = v.tiledLocation(offset, this.size);
             if (location.x < -this.maxSize.x || width < location.x)
                 continue;
-            if (location.Y < -this.maxSize.Y || height < location.y)
+            if (location.y < -this.maxSize.y || height < location.y)
                 continue;
             context.drawImage(v.image, location.x, location.y);
         }
