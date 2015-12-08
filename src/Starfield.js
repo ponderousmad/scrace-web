@@ -17,12 +17,14 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
-function Starfield(width, height, density) {
+function Starfield(width, height, density, maxDepth, infrequentAreFar) {
     this.visuals = [];
     this.images = [];
     this.maxSize = new Point(0,0);
     this.size = new Point(width, height);
     this.density = density;
+    this.maxDepth = maxDepth;
+    this.infrequentAreFar = infrequentAreFar;
     
     this.frequency = {
         "Galaxy": 1,
@@ -68,12 +70,16 @@ function Starfield(width, height, density) {
         var imageCount = this.images.length;
         for (var i = 0; i < count; ++i)
         {
-            var x = getRandomInt(0, width);
-            var y = getRandomInt(0, height);
-            var distance = Math.random()
+            var x = Math.random() * width;
+            var y = Math.random() * height;
+            var distance = Math.random() * this.maxDepth;
+            if(this.infrequentAreFar) {
+                distance = (distance * (imageCount - index)) / imageCount;
+            }
+            var scale = 1.0 / (1.0 - distance);
             var index = getRandomInt(0, imageCount);
             var image = this.images[index];
-            this.visuals.push(new Visual(image, new Point(x, y), (distance * (imageCount - index)) / imageCount));
+            this.visuals.push(new Visual(image, new Point(x * scale, y * scale), distance));
         }
     }
 
@@ -124,7 +130,7 @@ function Starfield(width, height, density) {
 window.onload = function(e) {
     console.log("window.onload", e, Date.now())
     var canvas = document.getElementById("canvas");
-    var starfield = new Starfield(5000, 5000, 0.0007);
+    var starfield = new Starfield(5000, 5000, 0.002, 0.95, true);
     var offset = new Point(0,0);
     window.setInterval(function() {
         starfield.draw(canvas, offset, canvas.width, canvas.height)
