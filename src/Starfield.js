@@ -20,7 +20,7 @@ function getRandomInt(min, max) {
 function Starfield(width, height, density, maxDepth, infrequentAreFar) {
     this.visuals = [];
     this.images = [];
-    this.maxSize = new Point(0,0);
+    this.maxImageSize = new Point(0,0);
     this.size = new Point(width, height);
     this.density = density;
     this.maxDepth = maxDepth;
@@ -88,8 +88,8 @@ function Starfield(width, height, density, maxDepth, infrequentAreFar) {
         var starfield = this;
         image.onload = function() {
             console.log("Loaded ", name);
-            starfield.maxSize.x = Math.max(starfield.maxSize.x, image.width);
-            starfield.maxSize.y = Math.max(starfield.maxSize.y, image.height);
+            starfield.maxImageSize.x = Math.max(starfield.maxImageSize.x, image.width);
+            starfield.maxImageSize.y = Math.max(starfield.maxImageSize.y, image.height);
             
             for (var i = 0; i < frequency; ++i)
             {
@@ -113,9 +113,9 @@ function Starfield(width, height, density, maxDepth, infrequentAreFar) {
         {
             var v = this.visuals[i];
             var location = v.tiledLocation(offset, this.size);
-            if (location.x < -this.maxSize.x || width < location.x)
+            if (location.x < -this.maxImageSize.x || width < location.x)
                 continue;
-            if (location.y < -this.maxSize.y || height < location.y)
+            if (location.y < -this.maxImageSize.y || height < location.y)
                 continue;
             context.drawImage(v.image, location.x, location.y);
         }
