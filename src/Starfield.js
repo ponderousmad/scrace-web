@@ -90,6 +90,9 @@ function Starfield(width, height, density, maxDepth, infrequentAreFar) {
             var image = this.images[index];
             this.visuals.push(new Visual(image, new Vector(x * scale, y * scale), distance));
         }
+        this.visuals.sort(function(a, b) {
+            return a.distance - b.distance;
+        });
     }
 
     this.addImage = function(name, frequency) {
