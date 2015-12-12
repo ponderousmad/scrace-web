@@ -1,375 +1,297 @@
-﻿/* ---------------------------------------------------------------
- * Copyright © Adrian Smith.
- * Licensed under the MIT license. See license.txt at project root.
- * --------------------------------------------------------------- */
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
+﻿"use strict";
 
-namespace RGG2010
-{
-    [Flags]
-    enum Thrusters
+var Thrusters = {
+    None : 0,
+    RotateLeft : 1,
+    RotateRight : 2,
+    Accelerate : 4,
+    Break : 8
+}
+
+var PlayerState = {
+    Alive : 0,
+    Dying : 1,
+    Dead : 2,
+    Reset : 3,
+    Finished : 4
+}
+
+function getDirection(angle) {
+    return new Vector(Math.cos(angle), Math.sin(angle));
+}
+
+function distanceSquared(a, b) {
+    var xDiff = b.x - a.x;
+    var yDiff = b.y - a.y;
+    return xDiff * xDiff + yDiff * yDiff;
+}
+
+function determineThrust(keyboardState) {
+    var thrust = 0;
+    if (keyboardState.IsKeyDown(Keys.Up)) {
+        thrust |= Thrusters.Accelerate;
+    }
+    if (keyboardState.IsKeyDown(Keys.Down)) {
+        thrust |= Thrusters.Break;
+    }
+    if (keyboardState.IsKeyDown(Keys.Left)) {
+        thrust |= Thrusters.RotateLeft;
+    }
+    if (keyboardState.IsKeyDown(Keys.Right)) {
+        thrust |= Thrusters.RotateRight;
+    }
+    return thrust;
+}
+
+var Player = function() {
+    this.sprite = null;
+    this.thrust = null;
+    this.leftThruster = null;
+    this.rightThruster = null;
+    this.leftRearThruster = null;
+    this.rightRearThruster = null;
+    this.explosion = [];
+    this.explodeSound = null;
+
+    this.location = new Vector(0, 0);
+    this.velocity = new Vector2(0, 0);
+    this.angle = 0.0;
+    this.thrusting = false;
+    this.leftRetro = false;
+    this.rightRetro = false;
+    this.leftRearRetro = false;
+    this.rightRearRetro = false;
+    this.state = PlayerState.Alive;
+    this.sinceDied = 0.0;
+    this.bits = null;
+
+    this.kManouverPower = 0.005;
+    this.kMaxAcceleration = 0.0006;
+    this.kMaxBreak = 0.0005;
+    this.kMaxSpeed = 0.5;
+    this.kExplosionFrameMilliseconds = 80;
+    this.kPlayerSize = 4;
+
+    this.kMaxPlanetDistance = 500.0;
+    this.kMaxPlanetDistanceSq = kMaxPlanetDistance * kMaxPlanetDistance;
+    
+    var self = this;
+
+    /*
+    public void LoadContent(ContentManager content)
     {
-        None = 0,
-        RotateLeft = 1,
-        RotateRight = 2,
-        Accelerate = 4,
-        Break = 8
+        mSprite = content.Load<Texture2D>("Ships/Player");
+        mThrust = content.Load<Texture2D>("Ships/Thrust");
+        mLeftThruster = content.Load<Texture2D>("Ships/RetroLeft");
+        mRightThruster = content.Load<Texture2D>("Ships/RetroRight");
+        mLeftRearThruster = content.Load<Texture2D>("Ships/RetroRearLeft");
+        mRightRearThruster = content.Load<Texture2D>("Ships/RetroRearRight");
+        mExplodeSound = content.Load<SoundEffect>("Sounds/Splat");
+
+        mExplosion = new Texture2D[]
+        {
+            content.Load<Texture2D>("Ships/Explode01"),
+            content.Load<Texture2D>("Ships/Explode02"),
+            content.Load<Texture2D>("Ships/Explode03"),
+            content.Load<Texture2D>("Ships/Explode04"),
+            content.Load<Texture2D>("Ships/Explode05"),
+            content.Load<Texture2D>("Ships/Explode06"),
+            content.Load<Texture2D>("Ships/Explode07"),
+            content.Load<Texture2D>("Ships/Explode08"),
+            content.Load<Texture2D>("Ships/Explode09")
+        };
+    }
+    */
+
+    this.reset = function(location) {
+        self.location = location;
+        self.velocity = new Vector(0, 0);
+        self.angle = -Math.PI / 2;
+        self.thrusting = false;
+        self.rightRetro = false;
+        self.rightRearRetro = false;
+        self.leftRetro = false;
+        self.leftRearRetro = false;
+        self.state = PlayerState.Alive;
     }
 
-    enum PlayerState
-    {
-        Alive,
-        Dying,
-        Dead,
-        Reset,
-        Finished
+    this.update = function(elapsed, planets, debris, gates, keyboardState) {
+        var before = self.location;
+        if (self.state === PlayerState.Dead || self.state === PlayerState.Finished) {
+            if (keyboard.isKeyDown(Keys.Space)) {
+                self.state = PlayerState.Reset;
+            }
+            return;
+        } else if (self.state === PlayerState.Dying) {
+            self.location = addVectors(self.location, scaleVector(self.velocity, elapsed));
+            self.velocity = scaleVector(self.velocity, 0.3);
+            self.sinceDied += elapsed;
+            if (self.sinceDied > self.explosion.Length * self.kExplosionFrameMilliseconds) {
+                self.state = PlayerState.Dead;
+            }
+            return;
+        }
+        var direction = getDirection(self.angle);
+
+        self.location = addVectors(self.location, scaleVector(self.velocity, elapsed));
+
+        self.thrusting = false;
+        self.leftRetro = false;
+        self.rightRetro = false;
+        self.leftRearRetro = false;
+        self.rightRearRetro = false;
+        var thrust = determineThrust(keyboardState);
+        if ((thrust & Thrusters.RotateLeft) === Thrusters.RotateLeft) {
+            self.angle -= self.kManouverPower * elapsed;
+            self.rightRetro = true;
+            self.leftRearRetro = true;
+        }
+        else if ((thrust & Thrusters.RotateRight) === Thrusters.RotateRight) {
+            self.angle += self.kManouverPower * elapsed;
+            self.leftRetro = true;
+            self.rightRearRetro = true;
+        }
+        self._clampAngle();
+
+        var gravity = new Vector(0, 0);
+        for (var i = 0; i < planets.length; ++i) {
+            var planet = planets[i];
+            var gravity = planet.determineForce(self.location, self.kMaxPlanetDistanceSq);
+            if (gravity) {
+                self.velocity = addVectors(self.velocity, scaleVector(gravity, elapsed));
+            }
+            if (distanceSquared(planet.location, self.location) < (planet.size * planet.size)) {
+                self.crash();
+            }
+        }
+
+        for (i = 0; i < debris.length; ++i) {
+            var d = debris[i];
+            var size = d.Size + kPlayerSize;
+            if (distanceSquared(self.location, d.location) < (size * size))
+            {
+                self.crash();
+            }
+        }
+
+        var last = null;
+        for (i = 0; i < gates.length; ++i) {
+            var g = gates[i];
+            g.UpdatePassed(before, self.location);
+            g.UpdatePassed(self.location, self.location + (getDirection(self.angle) * self.sprite.Width / 2.0));
+            last = g;
+        }
+
+        if(last && last.hasPassed) {
+            self.state = PlayerState.Finished;
+            return;
+        }
+
+        if ((thrust & Thrusters.Accelerate) == Thrusters.Accelerate) {
+            self.velocity = addVectors(self.velocity, scaleVector(direction, self.kMaxAcceleration * elapsed));
+            self.thrusting = true;
+        } else if ((thrust & Thrusters.Break) == Thrusters.Break) {
+            var mag = self._speedSquared();
+            if (mag > 0) {
+                self.rightRetro = true;
+                self.leftRetro = true;
+                self.rightRearRetro = true;
+                self.leftRearRetro = true;
+
+                if (mag < (self.kMaxBreak * self.kMaxBreak * elapsed * elapsed)) {
+                    self.velocity = Vector(0, 0);
+                } else {
+                    self.velocity = addVectors(self.velocity, scaleVector(vectorNormalize(self.velocity), self.kMaxBreak * elapsed));
+                }
+            }
+        }
+        if (self._SpeedSquared() > self.kMaxSpeed * self.kMaxSpeed) {
+            self.velocity = vectorNormalize(self.velocity) * self.kMaxSpeed;
+        }
     }
 
-    class Player
-    {
-        private Texture2D mSprite = null;
-        private Texture2D mThrust = null;
-        private Texture2D mLeftThruster = null;
-        private Texture2D mRightThruster = null;
-        private Texture2D mLeftRearThruster = null;
-        private Texture2D mRightRearThruster = null;
-        private Texture2D[] mExplosion = null;
-        private SoundEffect mExplodeSound = null;
-
-        private Vector2 mLocation = new Vector2(0, 0);
-        private Vector2 mVelocity = new Vector2(0, 0);
-        private float mAngle = 0;
-        private bool mThrusting = false;
-        private bool mLeftRetro = false;
-        private bool mRightRetro = false;
-        private bool mLeftRearRetro = false;
-        private bool mRightRearRetro = false;
-        private PlayerState mState = PlayerState.Alive;
-        private float mSinceDied = 0;
-        private Debris[] mBits = null;
-
-        private const float kManouverPower = 0.005f;
-        private const float kMaxAcceleration = 0.0006f;
-        private const float kMaxBreak = 0.0005f;
-        private const float kMaxSpeed = 0.5f;
-        private const float kTimePerFrame = 80;
-        private const float kPlayerSize = 4;
-
-        private const float kMaxPlanetDistance = 500;
-        private const float kMaxPlanetDistanceSq = kMaxPlanetDistance * kMaxPlanetDistance;
-
-        public Vector2 Location
-        {
-            get { return mLocation; }
+    this._clampAngle = function() {
+        while (self.angle < -Math.PI) {
+            self.angle += 2 * Math.PI;
         }
 
-        public PlayerState State
-        {
-            get
-            {
-                return mState;
-            }
+        while (self.angle > Math.PI) {
+            self.angle -= 2 * Math.PI;
         }
+    }
 
-        public void LoadContent(ContentManager content)
-        {
-            mSprite = content.Load<Texture2D>("Ships/Player");
-            mThrust = content.Load<Texture2D>("Ships/Thrust");
-            mLeftThruster = content.Load<Texture2D>("Ships/RetroLeft");
-            mRightThruster = content.Load<Texture2D>("Ships/RetroRight");
-            mLeftRearThruster = content.Load<Texture2D>("Ships/RetroRearLeft");
-            mRightRearThruster = content.Load<Texture2D>("Ships/RetroRearRight");
-            mExplodeSound = content.Load<SoundEffect>("Sounds/Splat");
+    this.crash = function() {
+        if (self.state != PlayerState.Dying) {
+            self.state = PlayerState.Dying;
+            self.explodeSound.Play();
+            self.sinceDied = 0;
 
-            mExplosion = new Texture2D[]
-            {
-                content.Load<Texture2D>("Ships/Explode01"),
-                content.Load<Texture2D>("Ships/Explode02"),
-                content.Load<Texture2D>("Ships/Explode03"),
-                content.Load<Texture2D>("Ships/Explode04"),
-                content.Load<Texture2D>("Ships/Explode05"),
-                content.Load<Texture2D>("Ships/Explode06"),
-                content.Load<Texture2D>("Ships/Explode07"),
-                content.Load<Texture2D>("Ships/Explode08"),
-                content.Load<Texture2D>("Ships/Explode09")
-            };
+            self.bits = [];
+            var chunk = new Debris(DebrisType.PlayerCockpit, self.location);
+            chunk.SetStartVelocity(addVectors(self.velocity, getDirection(self.angle)));
+            chunk.SetSpin(Math.PI * 0.01);
+            self.bits.push(chunk);
+            chunk = new Debris(DebrisType.PlayerLeft, mLocation);
+            chunk.SetStartVelocity(addVectors(self.velocity, getDirection(self.angle + Math.PI * 0.5)));
+            chunk.SetSpin(-Math.PI * 0.02);
+            self.bits.push(chunk);
+            chunk = new Debris(DebrisType.PlayerRight, mLocation);
+            chunk.SetStartVelocity(addVectors(self.velocity, getDirection(self.angle - Math.PI * 0.5)));
+            chunk.SetSpin(Math.PI * 0.03);
+            self.bits.push(chunk);
         }
+    }
 
-        public void Reset(Vector2 location)
-        {
-            mLocation = location;
-            mVelocity = new Vector2(0, 0);
-            mAngle = -MathHelper.PiOver2;
-            mThrusting = false;
-            mRightRetro = false;
-            mRightRearRetro = false;
-            mLeftRetro = false;
-            mLeftRearRetro = false;
-            mState = PlayerState.Alive;
+    this._speedSquared = function() {
+        return self.velocity.x * self.velocity.x + self.velocity.y * self.velocity.y;
+    }
+
+    this.draw = function(context, offset) {
+        if (self.state === PlayerState.Dying) {
+            var frame = Math.Floor(self.sinceDied / kExplosionFrameMilliseconds);
+            if (frame >= self.explosion.length) {
+                frame = self.explosion.length - 1;
+            }
+            var position = addVectors(self.location, self.offset);
+            var size = new Vector(self.explosion[frame].width, self.explosion[frame].height);
+            context.Draw(
+                self.explosion[frame],
+                position.x - (size.width * 0.5), position.y - (size.height * 0.5),
+                size.width, size.height
+            );
+            return;
+        } else if (self.state != PlayerState.Alive && self.state != PlayerState.Finished) {
+            return;
         }
+        var width = self.sprite.width;
+        var height = self.sprite.height;
+        var xSpriteOffset = width / 4.0;
+        var ySpriteOffset = height / 2.0;
+        var xLoc = self.location.x + offset.x;
+        var yLoc = self.location.y + offset.y;
 
-        public void Update(GameTime time, IEnumerable<Planet> planets, IEnumerable<Debris> debris, IEnumerable<Gate> gates, KeyboardState keyboard)
-        {
-            Vector2 before = mLocation;
-            float elapsed = (float)time.ElapsedGameTime.TotalMilliseconds;
-            if (mState == PlayerState.Dead || mState == PlayerState.Finished)
-            {
-                if (keyboard.IsKeyDown(Keys.Space))
-                {
-                    mState = PlayerState.Reset;
-                }
-                return;
-            }
-            else if (mState == PlayerState.Dying)
-            {
-                mLocation += mVelocity * elapsed;
-                mVelocity *= 0.3f;
-                mSinceDied += elapsed;
-                if (mSinceDied > mExplosion.Length * kTimePerFrame)
-                {
-                    mState = PlayerState.Dead;
-                }
-                return;
-            }
-            Vector2 direction = GetDirection(mAngle);
+        context.save();
+        context.translate(-xLoc, -yLoc);
+        context.rotate(self.angle);
+        context.translate(xLoc - xSpriteOffset, yLoc - ySpriteOffset);
 
-            mLocation += mVelocity * elapsed;
-
-            mThrusting = false;
-            mLeftRetro = false;
-            mRightRetro = false;
-            mLeftRearRetro = false;
-            mRightRearRetro = false;
-            Thrusters thrust = DetermineThrust(keyboard);
-            if ((thrust & Thrusters.RotateLeft) == Thrusters.RotateLeft)
-            {
-                mAngle -= kManouverPower * elapsed;
-                mRightRetro = true;
-                mLeftRearRetro = true;
-            }
-            else if ((thrust & Thrusters.RotateRight) == Thrusters.RotateRight)
-            {
-                mAngle += kManouverPower * elapsed;
-                mLeftRetro = true;
-                mRightRearRetro = true;
-            }
-            ClampAngle();
-
-            Vector2 gravity = new Vector2(0, 0);
-            foreach (Planet planet in planets)
-            {
-                if (planet.DetermineForce(mLocation, kMaxPlanetDistanceSq, ref gravity))
-                {
-                    mVelocity += gravity * elapsed;
-                }
-                if (Vector2.DistanceSquared(planet.Location, mLocation) < (planet.Size * planet.Size))
-                {
-                    Crash();
-                }
-            }
-
-            foreach (Debris d in debris)
-            {
-                float size = d.Size + kPlayerSize;
-                if (Vector2.DistanceSquared(mLocation, d.Location) < (size * size))
-                {
-                    Crash();
-                }
-            }
-
-            Gate last = null;
-            foreach (Gate g in gates)
-            {
-                g.UpdatePassed(before, mLocation);
-                g.UpdatePassed(mLocation, mLocation + (GetDirection(mAngle) * mSprite.Width / 2.0f));
-                last = g;
-            }
-
-            if(last != null && last.HasPassed)
-            {
-                mState = PlayerState.Finished;
-                return;
-            }
-
-            if ((thrust & Thrusters.Accelerate) == Thrusters.Accelerate)
-            {
-                mVelocity += direction * kMaxAcceleration * elapsed;
-                mThrusting = true;
-            }
-            else if ((thrust & Thrusters.Break) == Thrusters.Break)
-            {
-                float mag = SpeedSquared();
-                if (mag > 0)
-                {
-                    mRightRetro = true;
-                    mLeftRetro = true;
-                    mRightRearRetro = true;
-                    mLeftRearRetro = true;
-
-                    if (mag < (kMaxBreak * kMaxBreak * elapsed * elapsed))
-                    {
-                        mVelocity = new Vector2(0, 0);
-                    }
-                    else
-                    {
-                        mVelocity -= Vector2.Normalize(mVelocity) * kMaxBreak * elapsed;
-                    }
-                }
-            }
-            if (SpeedSquared() > kMaxSpeed * kMaxSpeed)
-            {
-                mVelocity = Vector2.Normalize(mVelocity) * kMaxSpeed;
-            }
+        var location = addVectors(location, offset);
+        if (self.thrusting) {
+            context.Draw(self.thrust, location.x, location.y, width, height);
         }
-
-        private void ClampAngle()
-        {
-            while (mAngle < -MathHelper.Pi)
-            {
-                mAngle += 2 * MathHelper.Pi;
-            }
-
-            while (mAngle > MathHelper.Pi)
-            {
-                mAngle -= 2 * MathHelper.Pi;
-            }
+        if (self.leftRetro) {
+            context.Draw(self.leftThruster, location.x, location.y, width, height);
         }
-
-        private static Vector2 GetDirection(float angle)
-        {
-            return new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
+        if (self.rightRetro) {
+            context.Draw(self.rightThruster, location.x, location.y, width, height);
         }
-
-        private void Crash()
-        {
-            if (mState != PlayerState.Dying)
-            {
-                mState = PlayerState.Dying;
-                mExplodeSound.Play();
-                mSinceDied = 0;
-
-                List<Debris> debris = new List<Debris>();
-                Debris chunk = new Debris(DebrisType.PlayerCockpit, mLocation);
-                chunk.SetStartVelocity(mVelocity + GetDirection(mAngle));
-                chunk.SetSpin(MathHelper.Pi * 0.01f);
-                debris.Add(chunk);
-                chunk = new Debris(DebrisType.PlayerLeft, mLocation);
-                chunk.SetStartVelocity(mVelocity + GetDirection(mAngle + MathHelper.PiOver2));
-                chunk.SetSpin(-MathHelper.Pi * 0.02f);
-                debris.Add(chunk);
-                chunk = new Debris(DebrisType.PlayerRight, mLocation);
-                chunk.SetStartVelocity(mVelocity + GetDirection(mAngle - MathHelper.PiOver2));
-                chunk.SetSpin(MathHelper.Pi * 0.03f);
-                debris.Add(chunk);
-                mBits = debris.ToArray();
-            }
+        if (self.leftRearRetro) {
+            context.Draw(self.leftRearThruster, location.x, location.y, width, height);
         }
-
-        internal Debris[] NewDebris()
-        {
-            try
-            {
-                return mBits;
-            }
-            finally
-            {
-                mBits = null;
-            }
+        if (self.rightRearRetro) {
+            context.Draw(self.rightRearThruster, location.x, location.y, width, height);
         }
-
-        private float SpeedSquared()
-        {
-            return mVelocity.X * mVelocity.X + mVelocity.Y * mVelocity.Y;
-        }
-
-        public void Draw(SpriteBatch batch, Vector2 offset)
-        {
-            if (State == PlayerState.Dying)
-            {
-                int frame = (int)Math.Floor(mSinceDied / kTimePerFrame);
-                if (frame >= mExplosion.Length)
-                {
-                    frame = mExplosion.Length - 1;
-                }
-                batch.Begin();
-                batch.Draw(mExplosion[frame], mLocation + offset - new Vector2(mExplosion[frame].Width / 2, mExplosion[frame].Height / 2), Color.White);
-                batch.End();
-                return;
-            }
-            else if (State != PlayerState.Alive && State != PlayerState.Finished)
-            {
-                return;
-            }
-            float xSpriteOffset = mSprite.Width / 4.0f;
-            float ySpriteOffset = mSprite.Height / 2.0f;
-            float xLoc = mLocation.X + offset.X;
-            float yLoc = mLocation.Y + offset.Y;
-
-            Matrix spriteTranslate, rot, center, uncenter;
-            Matrix.CreateTranslation(-xSpriteOffset, -ySpriteOffset, 0, out spriteTranslate);
-            Matrix.CreateRotationZ(mAngle, out rot);
-            Matrix.CreateTranslation(xLoc, yLoc, 0, out center);
-            Matrix.CreateTranslation(-xLoc, -yLoc, 0, out uncenter);
-            rot = spriteTranslate * uncenter * rot * center;
-            batch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Deferred, SaveStateMode.None, rot);
-
-            Vector2 location = mLocation + offset;
-            if (mThrusting)
-            {
-                batch.Draw(mThrust, location, Color.White);
-            }
-            if (mLeftRetro)
-            {
-                batch.Draw(mLeftThruster, location, Color.White);
-            }
-            if (mRightRetro)
-            {
-                batch.Draw(mRightThruster, location, Color.White);
-            }
-            if (mLeftRearRetro)
-            {
-                batch.Draw(mLeftRearThruster, location, Color.White);
-            }
-            if (mRightRearRetro)
-            {
-                batch.Draw(mRightRearThruster, location, Color.White);
-            }
-            batch.Draw(mSprite, location, Color.White);
-            batch.End();
-        }
-
-        internal Thrusters DetermineThrust(KeyboardState keyboardState)
-        {
-            Thrusters thrust = 0;
-            if (keyboardState.IsKeyDown(Keys.Up))
-            {
-                thrust |= Thrusters.Accelerate;
-            }
-            if (keyboardState.IsKeyDown(Keys.Down))
-            {
-                thrust |= Thrusters.Break;
-            }
-            if (keyboardState.IsKeyDown(Keys.Left))
-            {
-                thrust |= Thrusters.RotateLeft;
-            }
-            if (keyboardState.IsKeyDown(Keys.Right))
-            {
-                thrust |= Thrusters.RotateRight;
-            }
-            return thrust;
-        }
+        context.Draw(self.sprite, location.x, location.y, width, height);
+        context.restore();
     }
 }
