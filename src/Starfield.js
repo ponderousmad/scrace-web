@@ -86,9 +86,8 @@ function Starfield(width, height, density, maxDepth, infrequentAreFar) {
         });
     }
 
-    this.draw = function(canvas, offset, width, height)
+    this.draw = function(context, offset, width, height)
     {
-        var context = canvas.getContext("2d");
         context.fillStyle = "black";
         context.fillRect(0, 0, width, height);
 

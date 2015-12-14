@@ -805,9 +805,12 @@ window.onload = function(e) {
     console.log("window.onload", e, Date.now())
     var canvas = document.getElementById("canvas");
     var starfield = new Starfield(5000, 5000, 0.002, 0.95, true);
-    var offset = new Vector(0,0);
+    var player = new Player();
+    var offset = new Vector(0,0);  
+    var context = canvas.getContext("2d");
     window.setInterval(function() {
-        starfield.draw(canvas, offset, canvas.width, canvas.height)
+        starfield.draw(context, offset, canvas.width, canvas.height);
+        player.draw(context, offset);
         offset.x += 1;
         offset.y += 1;
     }, 16);
