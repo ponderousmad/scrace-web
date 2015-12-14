@@ -7,9 +7,9 @@ function ImageBatch(onComplete) {
     var self = this;
     
     this._checkComplete = function() {
-        if(self._commited) {
-            if(self._toLoad === 0) {
-                if(this._onComplete) {
+        if (self._commited) {
+            if (self._toLoad === 0) {
+                if (this._onComplete) {
                     this._onComplete();
                 }
             }
