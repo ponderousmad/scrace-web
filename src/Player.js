@@ -52,9 +52,10 @@ var Player = function() {
     this.rightRearThruster = null;
     this.explosion = [];
     this.explodeSound = null;
+    this._loaded = false;
 
     this.location = new Vector(0, 0);
-    this.velocity = new Vector2(0, 0);
+    this.velocity = new Vector(0, 0);
     this.angle = 0.0;
     this.thrusting = false;
     this.leftRetro = false;
@@ -73,35 +74,35 @@ var Player = function() {
     this.kPlayerSize = 4;
 
     this.kMaxPlanetDistance = 500.0;
-    this.kMaxPlanetDistanceSq = kMaxPlanetDistance * kMaxPlanetDistance;
+    this.kMaxPlanetDistanceSq = this.kMaxPlanetDistance * this.kMaxPlanetDistance;
     
     var self = this;
 
-    /*
-    public void LoadContent(ContentManager content)
-    {
-        mSprite = content.Load<Texture2D>("Ships/Player");
-        mThrust = content.Load<Texture2D>("Ships/Thrust");
-        mLeftThruster = content.Load<Texture2D>("Ships/RetroLeft");
-        mRightThruster = content.Load<Texture2D>("Ships/RetroRight");
-        mLeftRearThruster = content.Load<Texture2D>("Ships/RetroRearLeft");
-        mRightRearThruster = content.Load<Texture2D>("Ships/RetroRearRight");
-        mExplodeSound = content.Load<SoundEffect>("Sounds/Splat");
+    this._loadContent = function() {
+        var batch = new ImageBatch(function(){ self._loaded = true; });
+        var path = "/scrace/images/ship/"
+        self.sprite = batch.load(path + "Player.png");
+        self.thrust = batch.load(path + "Thrust.png");
+        self.leftThruster = batch.load(path + "RetroLeft.png");
+        self.rightThruster = batch.load(path + "RetroRight.png");
+        self.leftRearThruster = batch.load(path + "RetroRearLeft.png");
+        self.rightRearThruster = batch.load(path + "RetroRearRight.png");
+        //self.explodeSound = content.Load<SoundEffect>("Sounds/Splat.png");
 
-        mExplosion = new Texture2D[]
-        {
-            content.Load<Texture2D>("Ships/Explode01"),
-            content.Load<Texture2D>("Ships/Explode02"),
-            content.Load<Texture2D>("Ships/Explode03"),
-            content.Load<Texture2D>("Ships/Explode04"),
-            content.Load<Texture2D>("Ships/Explode05"),
-            content.Load<Texture2D>("Ships/Explode06"),
-            content.Load<Texture2D>("Ships/Explode07"),
-            content.Load<Texture2D>("Ships/Explode08"),
-            content.Load<Texture2D>("Ships/Explode09")
-        };
+        var path = "/scrace/images/explode/"
+        self.explosion = [
+            batch.load(path + "Explode01.png"),
+            batch.load(path + "Explode02.png"),
+            batch.load(path + "Explode03.png"),
+            batch.load(path + "Explode04.png"),
+            batch.load(path + "Explode05.png"),
+            batch.load(path + "Explode06.png"),
+            batch.load(path + "Explode07.png"),
+            batch.load(path + "Explode08.png"),
+            batch.load(path + "Explode09.png")
+        ];
+        batch.commit();
     }
-    */
 
     this.reset = function(location) {
         self.location = location;
@@ -247,6 +248,10 @@ var Player = function() {
     }
 
     this.draw = function(context, offset) {
+        if (!self._loaded) {
+            console.log("Not loaded");
+            return;
+        }
         if (self.state === PlayerState.Dying) {
             var frame = Math.Floor(self.sinceDied / kExplosionFrameMilliseconds);
             if (frame >= self.explosion.length) {
@@ -254,7 +259,7 @@ var Player = function() {
             }
             var position = addVectors(self.location, self.offset);
             var size = new Vector(self.explosion[frame].width, self.explosion[frame].height);
-            context.Draw(
+            context.drawImage(
                 self.explosion[frame],
                 position.x - (size.width * 0.5), position.y - (size.height * 0.5),
                 size.width, size.height
@@ -271,27 +276,30 @@ var Player = function() {
         var yLoc = self.location.y + offset.y;
 
         context.save();
-        context.translate(-xLoc, -yLoc);
-        context.rotate(self.angle);
-        context.translate(xLoc - xSpriteOffset, yLoc - ySpriteOffset);
+        //context.translate(-xLoc, -yLoc);
+        //context.rotate(self.angle);
+        //context.translate(xLoc - xSpriteOffset, yLoc - ySpriteOffset);
 
-        var location = addVectors(location, offset);
+        var location = addVectors(self.location, offset);
         if (self.thrusting) {
-            context.Draw(self.thrust, location.x, location.y, width, height);
+            context.drawImage(self.thrust, location.x, location.y, width, height);
         }
         if (self.leftRetro) {
-            context.Draw(self.leftThruster, location.x, location.y, width, height);
+            context.drawImage(self.leftThruster, location.x, location.y, width, height);
         }
         if (self.rightRetro) {
-            context.Draw(self.rightThruster, location.x, location.y, width, height);
+            context.drawImage(self.rightThruster, location.x, location.y, width, height);
         }
         if (self.leftRearRetro) {
-            context.Draw(self.leftRearThruster, location.x, location.y, width, height);
+            context.drawImage(self.leftRearThruster, location.x, location.y, width, height);
         }
         if (self.rightRearRetro) {
-            context.Draw(self.rightRearThruster, location.x, location.y, width, height);
+            context.drawImage(self.rightRearThruster, location.x, location.y, width, height);
         }
-        context.Draw(self.sprite, location.x, location.y, width, height);
+        console.log("Drawing ship");
+        context.drawImage(self.sprite, location.x, location.y, width, height);
         context.restore();
     }
+    
+    this._loadContent();
 }
