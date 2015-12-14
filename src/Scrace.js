@@ -1,22 +1,4 @@
-/* ---------------------------------------------------------------
- * Copyright © Adrian Smith.
- * Licensed under the MIT license. See license.txt at project root.
- * --------------------------------------------------------------- */
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Xml.Linq;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
-using RGG2010.Utils;
-
+/*
 namespace RGG2010
 {
     /// <summary>
@@ -817,3 +799,16 @@ namespace RGG2010
         }
     }
 }
+*/
+
+window.onload = function(e) {
+    console.log("window.onload", e, Date.now())
+    var canvas = document.getElementById("canvas");
+    var starfield = new Starfield(5000, 5000, 0.002, 0.95, true);
+    var offset = new Vector(0,0);
+    window.setInterval(function() {
+        starfield.draw(canvas, offset, canvas.width, canvas.height)
+        offset.x += 1;
+        offset.y += 1;
+    }, 16);
+};
