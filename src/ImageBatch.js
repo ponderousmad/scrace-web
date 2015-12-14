@@ -20,7 +20,9 @@ function ImageBatch(onComplete) {
         self._toLoad += 1;
         var image = new Image();
         image.onload = function() {
-            onLoad(image);
+            if (onLoad) {
+                onLoad(image);
+            }
             self._toLoad -= 1;
             self._checkComplete();
         }
