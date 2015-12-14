@@ -16,6 +16,14 @@ var PlayerState = {
     Finished : 4
 }
 
+var Keys = {
+    Up : 38,
+    Down : 40,
+    Left : 37,
+    Right : 39,
+    Reset : 32
+}
+
 function getDirection(angle) {
     return new Vector(Math.cos(angle), Math.sin(angle));
 }
@@ -28,16 +36,16 @@ function distanceSquared(a, b) {
 
 function determineThrust(keyboardState) {
     var thrust = 0;
-    if (keyboardState.IsKeyDown(Keys.Up)) {
+    if (keyboardState.isKeyDown(Keys.Up)) {
         thrust |= Thrusters.Accelerate;
     }
-    if (keyboardState.IsKeyDown(Keys.Down)) {
+    if (keyboardState.isKeyDown(Keys.Down)) {
         thrust |= Thrusters.Break;
     }
-    if (keyboardState.IsKeyDown(Keys.Left)) {
+    if (keyboardState.isKeyDown(Keys.Left)) {
         thrust |= Thrusters.RotateLeft;
     }
-    if (keyboardState.IsKeyDown(Keys.Right)) {
+    if (keyboardState.isKeyDown(Keys.Right)) {
         thrust |= Thrusters.RotateRight;
     }
     return thrust;
@@ -119,7 +127,7 @@ var Player = function() {
     this.update = function(elapsed, planets, debris, gates, keyboardState) {
         var before = self.location;
         if (self.state === PlayerState.Dead || self.state === PlayerState.Finished) {
-            if (keyboard.isKeyDown(Keys.Space)) {
+            if (keyboard.isKeyDown(Keys.Reset)) {
                 self.state = PlayerState.Reset;
             }
             return;
@@ -200,14 +208,14 @@ var Player = function() {
                 self.leftRearRetro = true;
 
                 if (mag < (self.kMaxBreak * self.kMaxBreak * elapsed * elapsed)) {
-                    self.velocity = Vector(0, 0);
+                    self.velocity = new Vector(0, 0);
                 } else {
-                    self.velocity = addVectors(self.velocity, scaleVector(vectorNormalize(self.velocity), self.kMaxBreak * elapsed));
+                    self.velocity = addVectors(self.velocity, scaleVector(vectorNormalize(self.velocity), -self.kMaxBreak * elapsed));
                 }
             }
         }
-        if (self._SpeedSquared() > self.kMaxSpeed * self.kMaxSpeed) {
-            self.velocity = vectorNormalize(self.velocity) * self.kMaxSpeed;
+        if (self._speedSquared() > self.kMaxSpeed * self.kMaxSpeed) {
+            self.velocity = scaleVector(vectorNormalize(self.velocity), self.kMaxSpeed);
         }
     }
 
@@ -249,7 +257,6 @@ var Player = function() {
 
     this.draw = function(context, offset) {
         if (!self._loaded) {
-            console.log("Not loaded");
             return;
         }
         if (self.state === PlayerState.Dying) {
@@ -275,11 +282,11 @@ var Player = function() {
         var xLoc = self.location.x + offset.x;
         var yLoc = self.location.y + offset.y;
 
-        context.save();
-        //context.translate(-xLoc, -yLoc);
-        //context.rotate(self.angle);
-        //context.translate(xLoc - xSpriteOffset, yLoc - ySpriteOffset);
-
+        context.save();        
+        context.translate(xLoc, yLoc);
+        context.rotate(self.angle);
+        context.translate(-xLoc - xSpriteOffset, -yLoc - ySpriteOffset);
+        
         var location = addVectors(self.location, offset);
         if (self.thrusting) {
             context.drawImage(self.thrust, location.x, location.y, width, height);
@@ -296,7 +303,6 @@ var Player = function() {
         if (self.rightRearRetro) {
             context.drawImage(self.rightRearThruster, location.x, location.y, width, height);
         }
-        console.log("Drawing ship");
         context.drawImage(self.sprite, location.x, location.y, width, height);
         context.restore();
     }

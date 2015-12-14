@@ -801,17 +801,45 @@ namespace RGG2010
 }
 */
 
+var KeyboardState = function(element) {
+    this.pressed = {};
+    var self = this;
+    
+    element.onkeydown = function(e){
+        e = e || window.event;
+        self.pressed[e.keyCode] = true;
+    }
+
+    element.onkeyup = function(e){
+        e = e || window.event;
+        delete self.pressed[e.keyCode];
+    }
+    
+    this.isKeyDown = function(keyCode) {
+        return self.pressed[keyCode] ? true : false;
+    }
+}
+
 window.onload = function(e) {
     console.log("window.onload", e, Date.now())
     var canvas = document.getElementById("canvas");
     var starfield = new Starfield(5000, 5000, 0.002, 0.95, true);
     var player = new Player();
-    var offset = new Vector(0,0);  
     var context = canvas.getContext("2d");
+    var keyboardState = new KeyboardState(window);
+    var timeStep = 16;
+    var planets = [];
+    var debris = [];
+    var gates = [];
     window.setInterval(function() {
+        player.update(timeStep, planets, debris, gates, keyboardState);
+    }, timeStep);
+    
+    function draw() {
+        var offset = addVectors(new Vector(canvas.width / 2, canvas.height /2), scaleVector(player.location,-1));
+        requestAnimationFrame(draw);
         starfield.draw(context, offset, canvas.width, canvas.height);
         player.draw(context, offset);
-        offset.x += 1;
-        offset.y += 1;
-    }, 16);
+    }
+    draw();
 };
