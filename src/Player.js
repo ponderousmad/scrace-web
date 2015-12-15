@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 var Thrusters = {
     None : 0,
@@ -127,7 +127,7 @@ var Player = function() {
     this.update = function(elapsed, planets, debris, gates, keyboardState) {
         var before = self.location;
         if (self.state === PlayerState.Dead || self.state === PlayerState.Finished) {
-            if (keyboard.isKeyDown(Keys.Reset)) {
+            if (keyboardState.isKeyDown(Keys.Reset)) {
                 self.state = PlayerState.Reset;
             }
             return;
@@ -135,7 +135,7 @@ var Player = function() {
             self.location = addVectors(self.location, scaleVector(self.velocity, elapsed));
             self.velocity = scaleVector(self.velocity, 0.3);
             self.sinceDied += elapsed;
-            if (self.sinceDied > self.explosion.Length * self.kExplosionFrameMilliseconds) {
+            if (self.sinceDied > self.explosion.length * self.kExplosionFrameMilliseconds) {
                 self.state = PlayerState.Dead;
             }
             return;
@@ -162,15 +162,15 @@ var Player = function() {
         }
         self._clampAngle();
 
-        var gravity = new Vector(0, 0);
         for (var i = 0; i < planets.length; ++i) {
             var planet = planets[i];
-            var gravity = planet.determineForce(self.location, self.kMaxPlanetDistanceSq);
-            if (gravity) {
-                self.velocity = addVectors(self.velocity, scaleVector(gravity, elapsed));
-            }
-            if (distanceSquared(planet.location, self.location) < (planet.size * planet.size)) {
-                self.crash();
+            var force = planet.determineForce(self.location, self.kMaxPlanetDistanceSq);
+            if (force) {
+                if (force === "crash") {
+                    self.crash();
+                } else {
+                    self.velocity = addVectors(self.velocity, scaleVector(force, elapsed));
+                }
             }
         }
 
@@ -232,9 +232,9 @@ var Player = function() {
     this.crash = function() {
         if (self.state != PlayerState.Dying) {
             self.state = PlayerState.Dying;
-            self.explodeSound.Play();
+            //self.explodeSound.Play();
             self.sinceDied = 0;
-
+            /*
             self.bits = [];
             var chunk = new Debris(DebrisType.PlayerCockpit, self.location);
             chunk.SetStartVelocity(addVectors(self.velocity, getDirection(self.angle)));
@@ -248,6 +248,7 @@ var Player = function() {
             chunk.SetStartVelocity(addVectors(self.velocity, getDirection(self.angle - Math.PI * 0.5)));
             chunk.SetSpin(Math.PI * 0.03);
             self.bits.push(chunk);
+            */
         }
     }
 
@@ -260,16 +261,16 @@ var Player = function() {
             return;
         }
         if (self.state === PlayerState.Dying) {
-            var frame = Math.Floor(self.sinceDied / kExplosionFrameMilliseconds);
+            var frame = Math.floor(self.sinceDied / self.kExplosionFrameMilliseconds);
             if (frame >= self.explosion.length) {
                 frame = self.explosion.length - 1;
             }
-            var position = addVectors(self.location, self.offset);
+            var position = addVectors(self.location, offset);
             var size = new Vector(self.explosion[frame].width, self.explosion[frame].height);
             context.drawImage(
                 self.explosion[frame],
-                position.x - (size.width * 0.5), position.y - (size.height * 0.5),
-                size.width, size.height
+                position.x - (size.x * 0.5), position.y - (size.y * 0.5),
+                size.x, size.y
             );
             return;
         } else if (self.state != PlayerState.Alive && self.state != PlayerState.Finished) {

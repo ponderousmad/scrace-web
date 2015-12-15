@@ -13,8 +13,16 @@ function addVectors(a, b) {
     return new Vector(a.x + b.x, a.y + b.y);
 }
 
+function subVectors(a, b) {
+    return new Vector(a.x - b.x, a.y - b.y);
+}
+
+function vectorLengthSq(v) {
+    return v.x * v.x + v.y * v.y;
+}
+
 function vectorLength(v) {
-    return Math.sqrt(v.x * v.x + v.y * v.y);
+    return Math.sqrt(vectorLengthSq(v));
 }
 
 function vectorNormalize(v) {
