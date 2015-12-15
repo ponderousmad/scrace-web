@@ -75,7 +75,6 @@ function Starfield(width, height, density, maxDepth, infrequentAreFar) {
 
     this.addImage = function(batch, name, frequency) {
         batch.load("/scrace/images/starfield/" + name + ".png", function(image) {
-            console.log("Loaded ", name);
             self.maxImageSize.x = Math.max(self.maxImageSize.x, image.width);
             self.maxImageSize.y = Math.max(self.maxImageSize.y, image.height);
             
@@ -105,7 +104,6 @@ function Starfield(width, height, density, maxDepth, infrequentAreFar) {
     
     var batch = new ImageBatch(self.populate);
     for (var imageName in self.frequency) {
-        console.log("Queueing ", imageName);
         self.addImage(batch, imageName, self.frequency[imageName]);
     }
     batch.commit();
