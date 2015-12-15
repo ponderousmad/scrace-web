@@ -74,6 +74,7 @@ var Planet = function(type, location, gravity) {
         if (distance < self.size()) {
             return "crash";
         }
-        return scaleVector(fromPlanet, self.gravity / distanceSq * distance);
+        var force = self.gravity / distanceSq;
+        return scaleVector(fromPlanet, force / distance);
     }
 }
