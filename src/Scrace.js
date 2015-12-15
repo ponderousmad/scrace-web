@@ -820,24 +820,41 @@ var KeyboardState = function(element) {
     }
 }
 
+if (window.performance.now) {
+    console.log("Using high performance timer");
+    getTimestamp = function() { return window.performance.now(); };
+} else {
+    if (window.performance.webkitNow) {
+        console.log("Using webkit high performance timer");
+        getTimestamp = function() { return window.performance.webkitNow(); };
+    } else {
+        console.log("Using low performance timer");
+        getTimestamp = function() { return new Date().getTime(); };
+    }
+}
+
 window.onload = function(e) {
     console.log("window.onload", e, Date.now())
     var canvas = document.getElementById("canvas");
-    var starfield = new Starfield(5000, 5000, 0.002, 0.95, true);
+    var starfield = new Starfield(5000, 5000, 0.001, 0.95, true);
     var player = new Player();
     var context = canvas.getContext("2d");
     var keyboardState = new KeyboardState(window);
     var timeStep = 16;
     var planets = [
-        new Planet(PlanetType.Ringed, new Vector(1000,1250), 1),
-        new Planet(PlanetType.GreenGasGiant, new Vector(-200,700), 3),
-        new Planet(PlanetType.Planetoid, new Vector(11,624), .2),
-        new Planet(PlanetType.PurpleGiant, new Vector(436,-567), 2.5),
+        new Planet(PlanetType.Ringed, new Vector(1000,1250), .1),
+        new Planet(PlanetType.GreenGasGiant, new Vector(-200,700), .5),
+        new Planet(PlanetType.Planetoid, new Vector(11,624), .05),
+        new Planet(PlanetType.PurpleGiant, new Vector(436,-567), .3),
     ];
     var debris = [];
     var gates = [];
+    var lastTime = getTimestamp();
     window.setInterval(function() {
-        player.update(timeStep, planets, debris, gates, keyboardState);
+        var now = getTimestamp();
+        var delta = now - lastTime;
+        player.update(delta, planets, debris, gates, keyboardState);
+        lastTime = now;
     }, timeStep);
     
     function draw() {

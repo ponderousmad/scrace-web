@@ -45,7 +45,7 @@ var Planet = function(type, location, gravity) {
         if(self.type === PlanetType.Ringed || !planetsLoaded) {
             return 30.0;
         } else {
-            return self.size = self.image.width / 2.0;
+            return self.image.width / 2.0;
         }
     }
 
@@ -71,6 +71,9 @@ var Planet = function(type, location, gravity) {
             return null;
         }
         var distance = Math.sqrt(distanceSq)
+        if (distance < self.size()) {
+            return "crash";
+        }
         return scaleVector(fromPlanet, self.gravity / distanceSq * distance);
     }
 }
