@@ -828,7 +828,12 @@ window.onload = function(e) {
     var context = canvas.getContext("2d");
     var keyboardState = new KeyboardState(window);
     var timeStep = 16;
-    var planets = [];
+    var planets = [
+        new Planet(PlanetType.Ringed, new Vector(1000,1250), 1),
+        new Planet(PlanetType.GreenGasGiant, new Vector(-200,700), 3),
+        new Planet(PlanetType.Planetoid, new Vector(11,624), .2),
+        new Planet(PlanetType.PurpleGiant, new Vector(436,-567), 2.5),
+    ];
     var debris = [];
     var gates = [];
     window.setInterval(function() {
@@ -839,6 +844,9 @@ window.onload = function(e) {
         var offset = addVectors(new Vector(canvas.width / 2, canvas.height /2), scaleVector(player.location,-1));
         requestAnimationFrame(draw);
         starfield.draw(context, offset, canvas.width, canvas.height);
+        for(var i = 0; i < planets.length; ++i) {
+            planets[i].draw(context, offset);
+        }
         player.draw(context, offset);
     }
     draw();
