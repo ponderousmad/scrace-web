@@ -74,7 +74,7 @@ function Starfield(width, height, density, maxDepth, infrequentAreFar) {
     }
 
     this.addImage = function(batch, name, frequency) {
-        batch.load("/scrace/images/starfield/" + name + ".png", function(image) {
+        batch.load(name + ".png", function(image) {
             self.maxImageSize.x = Math.max(self.maxImageSize.x, image.width);
             self.maxImageSize.y = Math.max(self.maxImageSize.y, image.height);
             
@@ -102,7 +102,7 @@ function Starfield(width, height, density, maxDepth, infrequentAreFar) {
         }
     }
     
-    var batch = new ImageBatch(self.populate);
+    var batch = new ImageBatch("/scrace/images/starfield/", self.populate);
     for (var imageName in self.frequency) {
         self.addImage(batch, imageName, self.frequency[imageName]);
     }

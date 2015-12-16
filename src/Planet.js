@@ -9,16 +9,14 @@ var PlanetType = {
     PurpleGiant : 5
 };
 
-var planetsLoaded = false
-var planetsBatch = new ImageBatch(function(){ planetsLoaded = true; });
-var planetsPath = "/scrace/images/planets/";
+var planetsBatch = new ImageBatch("/scrace/images/planets/");
 var planetImages = [
-    planetsBatch.load(planetsPath + "RingedPlanet.png"),
-    planetsBatch.load(planetsPath + "SmallPlanetoid.png"),
-    planetsBatch.load(planetsPath + "BrownRocky.png"),
-    planetsBatch.load(planetsPath + "GreenGasGiant.png"),
-    planetsBatch.load(planetsPath + "RockyForest.png"),
-    planetsBatch.load(planetsPath + "PurpleGiant.png")
+    planetsBatch.load("RingedPlanet.png"),
+    planetsBatch.load("SmallPlanetoid.png"),
+    planetsBatch.load("BrownRocky.png"),
+    planetsBatch.load("GreenGasGiant.png"),
+    planetsBatch.load("RockyForest.png"),
+    planetsBatch.load("PurpleGiant.png")
 ];
 planetsBatch.commit();
 
@@ -42,7 +40,7 @@ var Planet = function(type, location, gravity) {
     }
     
     this.size = function() {
-        if(self.type === PlanetType.Ringed || !planetsLoaded) {
+        if(self.type === PlanetType.Ringed || !planetsBatch.loaded) {
             return 30.0;
         } else {
             return self.image.width / 2.0;
@@ -54,7 +52,7 @@ var Planet = function(type, location, gravity) {
     }
 
     this.draw = function(context, offset) {
-        if (!planetsLoaded) {
+        if (!planetsBatch.loaded) {
             return;
         }
         var drawPosition = addVectors(self.location, offset);
