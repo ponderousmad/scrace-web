@@ -28,12 +28,6 @@ function getDirection(angle) {
     return new Vector(Math.cos(angle), Math.sin(angle));
 }
 
-function distanceSquared(a, b) {
-    var xDiff = b.x - a.x;
-    var yDiff = b.y - a.y;
-    return xDiff * xDiff + yDiff * yDiff;
-}
-
 function determineThrust(keyboardState) {
     var thrust = 0;
     if (keyboardState.isKeyDown(Keys.Up)) {
@@ -87,27 +81,26 @@ var Player = function() {
     var self = this;
 
     this._loadContent = function() {
-        var batch = new ImageBatch(function(){ self._loaded = true; });
-        var path = "/scrace/images/ship/"
-        self.sprite = batch.load(path + "Player.png");
-        self.thrust = batch.load(path + "Thrust.png");
-        self.leftThruster = batch.load(path + "RetroLeft.png");
-        self.rightThruster = batch.load(path + "RetroRight.png");
-        self.leftRearThruster = batch.load(path + "RetroRearLeft.png");
-        self.rightRearThruster = batch.load(path + "RetroRearRight.png");
+        var batch = new ImageBatch("/scrace/images/ship/", function(){ self._loaded = true; });
+        self.sprite = batch.load("Player.png");
+        self.thrust = batch.load("Thrust.png");
+        self.leftThruster = batch.load("RetroLeft.png");
+        self.rightThruster = batch.load("RetroRight.png");
+        self.leftRearThruster = batch.load("RetroRearLeft.png");
+        self.rightRearThruster = batch.load("RetroRearRight.png");
         //self.explodeSound = content.Load<SoundEffect>("Sounds/Splat.png");
 
-        var path = "/scrace/images/explode/"
+        batch.setPath("/scrace/images/explode/");
         self.explosion = [
-            batch.load(path + "Explode01.png"),
-            batch.load(path + "Explode02.png"),
-            batch.load(path + "Explode03.png"),
-            batch.load(path + "Explode04.png"),
-            batch.load(path + "Explode05.png"),
-            batch.load(path + "Explode06.png"),
-            batch.load(path + "Explode07.png"),
-            batch.load(path + "Explode08.png"),
-            batch.load(path + "Explode09.png")
+            batch.load("Explode01.png"),
+            batch.load("Explode02.png"),
+            batch.load("Explode03.png"),
+            batch.load("Explode04.png"),
+            batch.load("Explode05.png"),
+            batch.load("Explode06.png"),
+            batch.load("Explode07.png"),
+            batch.load("Explode08.png"),
+            batch.load("Explode09.png")
         ];
         batch.commit();
     }
@@ -167,7 +160,7 @@ var Player = function() {
             var force = planet.determineForce(self.location, self.kMaxPlanetDistanceSq);
             if (force) {
                 if (force === "crash") {
-                    self.crash();
+                    self.crash(debris);
                 } else {
                     self.velocity = addVectors(self.velocity, scaleVector(force, elapsed));
                 }
@@ -176,10 +169,9 @@ var Player = function() {
 
         for (i = 0; i < debris.length; ++i) {
             var d = debris[i];
-            var size = d.Size + kPlayerSize;
-            if (distanceSquared(self.location, d.location) < (size * size))
-            {
-                self.crash();
+            var size = d.size() + self.kPlayerSize;
+            if (vectorLengthSq(subVectors(self.location, d.location)) < (size * size)) {
+                self.crash(debris);
             }
         }
 
@@ -229,26 +221,23 @@ var Player = function() {
         }
     }
 
-    this.crash = function() {
+    this.crash = function(debris) {
         if (self.state != PlayerState.Dying) {
             self.state = PlayerState.Dying;
             //self.explodeSound.Play();
             self.sinceDied = 0;
-            /*
-            self.bits = [];
             var chunk = new Debris(DebrisType.PlayerCockpit, self.location);
-            chunk.SetStartVelocity(addVectors(self.velocity, getDirection(self.angle)));
-            chunk.SetSpin(Math.PI * 0.01);
-            self.bits.push(chunk);
-            chunk = new Debris(DebrisType.PlayerLeft, mLocation);
-            chunk.SetStartVelocity(addVectors(self.velocity, getDirection(self.angle + Math.PI * 0.5)));
-            chunk.SetSpin(-Math.PI * 0.02);
-            self.bits.push(chunk);
-            chunk = new Debris(DebrisType.PlayerRight, mLocation);
-            chunk.SetStartVelocity(addVectors(self.velocity, getDirection(self.angle - Math.PI * 0.5)));
-            chunk.SetSpin(Math.PI * 0.03);
-            self.bits.push(chunk);
-            */
+            chunk.setStartVelocity(addVectors(self.velocity, getDirection(self.angle)));
+            chunk.setSpin(Math.PI * 0.01);
+            debris.push(chunk);
+            chunk = new Debris(DebrisType.PlayerLeft, self.location);
+            chunk.setStartVelocity(addVectors(self.velocity, getDirection(self.angle + Math.PI * 0.5)));
+            chunk.setSpin(-Math.PI * 0.02);
+            debris.push(chunk);
+            chunk = new Debris(DebrisType.PlayerRight, self.location);
+            chunk.setStartVelocity(addVectors(self.velocity, getDirection(self.angle - Math.PI * 0.5)));
+            chunk.setSpin(Math.PI * 0.03);
+            debris.push(chunk);
         }
     }
 

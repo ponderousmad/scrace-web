@@ -847,12 +847,23 @@ window.onload = function(e) {
         new Planet(PlanetType.Planetoid, new Vector(11,624), 1),
         new Planet(PlanetType.PurpleGiant, new Vector(436,-567), 3),
     ];
-    var debris = [];
+    var debris = [
+        new Debris(DebrisType.LargeAsteroid, new Vector(0,50), new Vector(0.1,0)),
+        new Debris(DebrisType.LargeAsteroid, new Vector(50,50), new Vector(0.1,0.1)),
+        new Debris(DebrisType.LargeAsteroid, new Vector(50,-50), new Vector(0.1,-0.1)),
+        new Debris(DebrisType.SmallAsteroid, new Vector(50,0), new Vector(0,0.1)),
+        new Debris(DebrisType.SmallAsteroid, new Vector(80,50), new Vector(0.1,-0.2)),
+        new Debris(DebrisType.SmallAsteroid, new Vector(100,15)),
+    ];
+    
     var gates = [];
     var lastTime = getTimestamp();
     window.setInterval(function() {
         var now = getTimestamp();
         var delta = now - lastTime;
+        for(var i = 0; i < debris.length; ++i) {
+            debris[i].update(delta, planets);
+        }
         player.update(delta, planets, debris, gates, keyboardState);
         lastTime = now;
     }, timeStep);
@@ -863,6 +874,9 @@ window.onload = function(e) {
         starfield.draw(context, offset, canvas.width, canvas.height);
         for(var i = 0; i < planets.length; ++i) {
             planets[i].draw(context, offset);
+        }
+        for(i = 0; i < debris.length; ++i) {
+            debris[i].draw(context, offset);
         }
         player.draw(context, offset);
     }

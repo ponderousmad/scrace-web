@@ -1,16 +1,24 @@
 "use strict";
 
-function ImageBatch(onComplete) {
+function ImageBatch(basePath, onComplete) {
     this._toLoad = 0;
     this._commited = false;
+    this._basePath = basePath;
     this._onComplete = onComplete;
+    this.loaded = false;
+
     var self = this;
+    
+    this.setPath = function(path) {
+        self._basePath = path;
+    }
     
     this._checkComplete = function() {
         if (self._commited) {
             if (self._toLoad === 0) {
-                if (this._onComplete) {
-                    this._onComplete();
+                self.loaded = true;
+                if (self._onComplete) {
+                    self._onComplete();
                 }
             }
         }
@@ -26,7 +34,8 @@ function ImageBatch(onComplete) {
             self._toLoad -= 1;
             self._checkComplete();
         }
-        image.src = resource;
+
+        image.src = (self._basePath || "") + resource;
         return image;
     }
     
