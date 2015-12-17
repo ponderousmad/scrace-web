@@ -1,6 +1,6 @@
 {
     "Level": {
-        "Planet": [
+        "Planets": [
             {
                 "type": "Planetoid",
                 "gravity": "2.5",
@@ -321,7 +321,7 @@
                 "y": "-38.91833"
             }
         ],
-        "Gate": [
+        "Gates": [
             {
                 "x": "1",
                 "y": "-42",

@@ -1,6 +1,6 @@
 {
     "Level": {
-        "Planet": [
+        "Planets": [
             {
                 "type": "Ringed",
                 "gravity": "4",
@@ -318,7 +318,7 @@
                 "y": "468"
             }
         ],
-        "Gate": [
+        "Gates": [
             {
                 "x": "0",
                 "y": "-50",

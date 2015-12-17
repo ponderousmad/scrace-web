@@ -1,6 +1,6 @@
 {
     "Level": {
-        "Planet": [
+        "Planets": [
             {
                 "type": "GreenGasGiant",
                 "gravity": "4.5",
@@ -295,7 +295,7 @@
                 "y": "67"
             }
         ],
-        "Gate": [
+        "Gates": [
             {
                 "x": "1",
                 "y": "-39",
