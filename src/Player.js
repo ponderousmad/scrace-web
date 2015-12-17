@@ -88,7 +88,6 @@ var Player = function() {
         self.rightThruster = batch.load("RetroRight.png");
         self.leftRearThruster = batch.load("RetroRearLeft.png");
         self.rightRearThruster = batch.load("RetroRearRight.png");
-        //self.explodeSound = content.Load<SoundEffect>("Sounds/Splat.png");
 
         batch.setPath("/scrace/images/explode/");
         self.explosion = [
@@ -103,6 +102,8 @@ var Player = function() {
             batch.load("Explode09.png")
         ];
         batch.commit();
+
+        self.explodeSound = new SoundEffect("/scrace/audio/Splat.wav");
     }
 
     this.reset = function(location) {
@@ -224,7 +225,7 @@ var Player = function() {
     this.crash = function(debris) {
         if (self.state != PlayerState.Dying) {
             self.state = PlayerState.Dying;
-            //self.explodeSound.Play();
+            self.explodeSound.play();
             self.sinceDied = 0;
             var chunk = new Debris(DebrisType.PlayerCockpit, self.location);
             chunk.setStartVelocity(addVectors(self.velocity, getDirection(self.angle)));
