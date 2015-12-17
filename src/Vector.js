@@ -36,9 +36,12 @@ function vectorNormalize(v) {
     return new Vector(v.x / length, v.y / length);
 }
 
-function angleToVector(angle)
-{
+function angleToVector(angle) {
     return new Vector(Math.cos(angle), Math.sin(angle));
+}
+
+function parseVector(data) {
+    return new Vector(parseFloat(data.x), parseFloat(data.y));
 }
 
 function clampAngle(angle) {

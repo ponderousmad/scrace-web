@@ -833,6 +833,42 @@ if (window.performance.now) {
     }
 }
 
+function loadLevel(resource, planets, debris, gates) {
+    var request = new XMLHttpRequest();
+    request.open("GET", resource, true);
+    request.responseType = "json";
+    request.onload = function() {
+        planetData = request.response["Planets"];
+        planets.length = 0;
+        for (var i = 0; i < planetData.length; ++i) {
+            var planet = planetData[i];
+            var location = parseVector(planet);
+            var type = PlanetNames[planet.type];
+            planets.push(new Planet(type, location, planet.gravity));
+        }
+        
+        debrisData = request.response["Debris"];
+        debris.length = 0;
+        for (i = 0; i < debrisData.length; ++i) {
+            var d = debrisData[i];
+            var location = parseVector(d);
+            var velocity = d.velocity ? parseVector(d.velocity) : null;
+            var type = DebrisNames[d.type];
+            debris.push(new Debris(type, location, velocity));
+        }
+        
+        gatesData = request.response["Gates"];
+        gates.length = 0;
+        for (var i = 0; i < gatesData.length; ++i) {
+            var gate = gatesData[i];
+            var location = parseVector(gate);
+            var angle = parseFloat(gate.angle);
+            gates.push(new Gate(location, angle));
+        }
+    };
+    request.send();
+}
+
 window.onload = function(e) {
     console.log("window.onload", e, Date.now())
     var canvas = document.getElementById("canvas");
@@ -841,26 +877,13 @@ window.onload = function(e) {
     var context = canvas.getContext("2d");
     var keyboardState = new KeyboardState(window);
     var timeStep = 16;
-    var planets = [
-        new Planet(PlanetType.Ringed, new Vector(1000,1250), 2),
-        new Planet(PlanetType.GreenGasGiant, new Vector(-200,700), 5),
-        new Planet(PlanetType.Planetoid, new Vector(11,624), 1),
-        new Planet(PlanetType.PurpleGiant, new Vector(436,-567), 3),
-    ];
-    var debris = [
-        new Debris(DebrisType.LargeAsteroid, new Vector(0,50), new Vector(0.1,0)),
-        new Debris(DebrisType.LargeAsteroid, new Vector(50,50), new Vector(0.1,0.1)),
-        new Debris(DebrisType.LargeAsteroid, new Vector(50,-50), new Vector(0.1,-0.1)),
-        new Debris(DebrisType.SmallAsteroid, new Vector(50,0), new Vector(0,0.1)),
-        new Debris(DebrisType.SmallAsteroid, new Vector(80,50), new Vector(0.1,-0.2)),
-        new Debris(DebrisType.SmallAsteroid, new Vector(100,15)),
-    ];
-    
-    var gates = [
-        new Gate(new Vector(100,0), 0),
-        new Gate(new Vector(200,0), 0.1)
-    ];
+    var planets = [];
+    var debris = [];    
+    var gates = [];
     var lastTime = getTimestamp();
+    
+    loadLevel("/scrace/tracks/level1.json", planets, debris, gates);
+    
     window.setInterval(function() {
         var now = getTimestamp();
         var delta = now - lastTime;

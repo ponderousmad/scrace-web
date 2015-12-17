@@ -9,6 +9,15 @@ var PlanetType = {
     PurpleGiant : 5
 };
 
+var PlanetNames = {
+    "RingedPlanet" : PlanetType.Ringed,
+    "Planetoid" : PlanetType.Planetoid,
+    "BrownRocky" : PlanetType.BrownRocky,
+    "GreenGasGiant" : PlanetType.GreenGasGiant,
+    "RockyForest" : PlanetType.RockyForest,
+    "PurpleGiant" : PlanetType.PurpleGiant
+};
+
 var planetsBatch = new ImageBatch("/scrace/images/planets/");
 var planetImages = [
     planetsBatch.load("RingedPlanet.png"),
