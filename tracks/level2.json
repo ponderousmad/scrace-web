@@ -1,0 +1,1170 @@
+{
+    "Level": {
+        "Planet": [
+            {
+                "type": "BrownRocky",
+                "gravity": "2.5",
+                "x": "86",
+                "y": "-271"
+            },
+            {
+                "type": "PurpleGiant",
+                "gravity": "4",
+                "x": "677",
+                "y": "-251"
+            },
+            {
+                "type": "BrownRocky",
+                "gravity": "2.5",
+                "x": "700",
+                "y": "229"
+            },
+            {
+                "type": "Planetoid",
+                "gravity": "2",
+                "x": "463",
+                "y": "400"
+            },
+            {
+                "type": "Ringed",
+                "gravity": "3",
+                "x": "266",
+                "y": "390"
+            }
+        ],
+        "Debris": [
+            {
+                "type": "SmallAsteroid",
+                "x": "263",
+                "y": "-39"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "218",
+                "y": "49"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "441",
+                "y": "-28"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "325",
+                "y": "50"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "327",
+                "y": "-33"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "415",
+                "y": "-34"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "421",
+                "y": "71"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "515",
+                "y": "63"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "378",
+                "y": "126"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "250",
+                "y": "157"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "300",
+                "y": "111"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "307",
+                "y": "186"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "202",
+                "y": "198"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "165",
+                "y": "76"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "114",
+                "y": "-18"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "177",
+                "y": "-84"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "260",
+                "y": "-100"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "392",
+                "y": "-133"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "460",
+                "y": "-119"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "573",
+                "y": "-34"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "548",
+                "y": "33"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "546",
+                "y": "137"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "522",
+                "y": "189"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "368",
+                "y": "212"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "301",
+                "y": "242"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "328",
+                "y": "34"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "248",
+                "y": "15"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "201",
+                "y": "132"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "174",
+                "y": "154"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "132",
+                "y": "63"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "137",
+                "y": "10"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "208",
+                "y": "-10"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "372",
+                "y": "-27"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "435",
+                "y": "-46"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "441",
+                "y": "-71"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "542",
+                "y": "48"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "529",
+                "y": "150"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "447",
+                "y": "219"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "417",
+                "y": "221"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "295",
+                "y": "209"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "217",
+                "y": "149"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "230",
+                "y": "109"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "338",
+                "y": "3"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "332",
+                "y": "-98"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "277",
+                "y": "-114"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "199",
+                "y": "-118"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "147",
+                "y": "-124"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "487",
+                "y": "-100"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "529",
+                "y": "-60"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "533",
+                "y": "-20"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "508",
+                "y": "34"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "476",
+                "y": "54"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "451",
+                "y": "65"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "337",
+                "y": "-72"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "262",
+                "y": "-61"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "278",
+                "y": "7"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "292",
+                "y": "30"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "474",
+                "y": "-45"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "490",
+                "y": "-73"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "535",
+                "y": "-120"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "585",
+                "y": "-150"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "606",
+                "y": "-125"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "646",
+                "y": "-53"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "646",
+                "y": "46"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "637",
+                "y": "89"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "621",
+                "y": "132"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "616",
+                "y": "157"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "620",
+                "y": "9"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "610",
+                "y": "-16"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "587",
+                "y": "-30"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "573",
+                "y": "56"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "541",
+                "y": "98"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "459",
+                "y": "144"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "419",
+                "y": "173"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "374",
+                "y": "200"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "265",
+                "y": "279"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "232",
+                "y": "300"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "203",
+                "y": "296"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "188",
+                "y": "268"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "133",
+                "y": "195"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "138",
+                "y": "215"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "137",
+                "y": "224"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "102",
+                "y": "79"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "98",
+                "y": "46"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "56",
+                "y": "45"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "56",
+                "y": "103"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "87",
+                "y": "172"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "157",
+                "y": "136"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "218",
+                "y": "85"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "135",
+                "y": "-112"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "124",
+                "y": "-136"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "179",
+                "y": "-144"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "291",
+                "y": "-152"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "396",
+                "y": "-96"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "427",
+                "y": "-26"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "386",
+                "y": "23"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "397",
+                "y": "122"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "551",
+                "y": "176"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "451",
+                "y": "267"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "364",
+                "y": "296"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "330",
+                "y": "325"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "267",
+                "y": "332"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "208",
+                "y": "335"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "198",
+                "y": "358"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "199",
+                "y": "382"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "169",
+                "y": "322"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "153",
+                "y": "305"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "354",
+                "y": "290"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "566",
+                "y": "222"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "599",
+                "y": "253"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "622",
+                "y": "267"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "642",
+                "y": "232"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "657",
+                "y": "190"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "676",
+                "y": "161"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "684",
+                "y": "142"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "685",
+                "y": "87"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "679",
+                "y": "28"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "703",
+                "y": "-44"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "686",
+                "y": "-140"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "678",
+                "y": "-83"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "625",
+                "y": "-92"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "603",
+                "y": "-90"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "434",
+                "y": "-160"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "511",
+                "y": "-171"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "547",
+                "y": "-66"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "414",
+                "y": "15"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "314",
+                "y": "120"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "258",
+                "y": "164"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "214",
+                "y": "207"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "101",
+                "y": "-40"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "60",
+                "y": "-110"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "81",
+                "y": "-200"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "196",
+                "y": "-201"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "88",
+                "y": "-222"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "120",
+                "y": "-256"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "163",
+                "y": "-261"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "185",
+                "y": "-198"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "120",
+                "y": "-197"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "154",
+                "y": "-163"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "308",
+                "y": "-213"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "330",
+                "y": "-247"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "192",
+                "y": "-256"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "355",
+                "y": "-237"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "328",
+                "y": "-185"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "201",
+                "y": "-218"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "260",
+                "y": "-200"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "231",
+                "y": "-169"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "241",
+                "y": "-268"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "274",
+                "y": "-264"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "433",
+                "y": "-270"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "448",
+                "y": "-221"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "363",
+                "y": "-205"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "360",
+                "y": "-287"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "280",
+                "y": "-284"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "488",
+                "y": "-273"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "582",
+                "y": "-288"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "608",
+                "y": "-282"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "540",
+                "y": "-231"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "637",
+                "y": "-219"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "650",
+                "y": "-213"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "581",
+                "y": "-262"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "586",
+                "y": "-207"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "593",
+                "y": "-205"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "629",
+                "y": "-204"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "416",
+                "y": "-252"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "377",
+                "y": "-202"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "358",
+                "y": "-158"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "315",
+                "y": "-155"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "350",
+                "y": "-137"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "375",
+                "y": "-117"
+            },
+            {
+                "type": "SmallAsteroid",
+                "x": "262",
+                "y": "-209"
+            },
+            {
+                "type": "LargeAsteroid",
+                "x": "206",
+                "y": "-240"
+            }
+        ],
+        "Gate": [
+            {
+                "x": "-1",
+                "y": "-46",
+                "angle": "-1.570796"
+            },
+            {
+                "x": "1",
+                "y": "-99",
+                "angle": "-1.570796"
+            },
+            {
+                "x": "1",
+                "y": "-155",
+                "angle": "-1.570796"
+            },
+            {
+                "x": "1",
+                "y": "-199",
+                "angle": "-1.570796"
+            },
+            {
+                "x": "0",
+                "y": "-243",
+                "angle": "-1.570796"
+            },
+            {
+                "x": "8",
+                "y": "-296",
+                "angle": "-1.184914"
+            },
+            {
+                "x": "44",
+                "y": "-334",
+                "angle": "-0.5790743"
+            },
+            {
+                "x": "85",
+                "y": "-349",
+                "angle": "-0.1106572"
+            },
+            {
+                "x": "129",
+                "y": "-352",
+                "angle": "0"
+            },
+            {
+                "x": "184",
+                "y": "-352",
+                "angle": "0"
+            },
+            {
+                "x": "238",
+                "y": "-353",
+                "angle": "0"
+            },
+            {
+                "x": "300",
+                "y": "-355",
+                "angle": "0"
+            },
+            {
+                "x": "352",
+                "y": "-355",
+                "angle": "0"
+            },
+            {
+                "x": "404",
+                "y": "-358",
+                "angle": "0"
+            },
+            {
+                "x": "457",
+                "y": "-357",
+                "angle": "0"
+            },
+            {
+                "x": "514",
+                "y": "-358",
+                "angle": "0"
+            },
+            {
+                "x": "566",
+                "y": "-357",
+                "angle": "0"
+            },
+            {
+                "x": "624",
+                "y": "-360",
+                "angle": "0"
+            },
+            {
+                "x": "674",
+                "y": "-358",
+                "angle": "0"
+            },
+            {
+                "x": "711",
+                "y": "-353",
+                "angle": "0.218669"
+            },
+            {
+                "x": "755",
+                "y": "-325",
+                "angle": "0.86217"
+            },
+            {
+                "x": "775",
+                "y": "-291",
+                "angle": "1.234122"
+            },
+            {
+                "x": "783",
+                "y": "-244",
+                "angle": "1.494024"
+            },
+            {
+                "x": "785",
+                "y": "-182",
+                "angle": "1.570796"
+            },
+            {
+                "x": "785",
+                "y": "-126",
+                "angle": "1.570796"
+            },
+            {
+                "x": "785",
+                "y": "-75",
+                "angle": "1.570796"
+            },
+            {
+                "x": "786",
+                "y": "-18",
+                "angle": "1.570796"
+            },
+            {
+                "x": "787",
+                "y": "40",
+                "angle": "1.570796"
+            },
+            {
+                "x": "787",
+                "y": "96",
+                "angle": "1.570796"
+            },
+            {
+                "x": "790",
+                "y": "151",
+                "angle": "1.570796"
+            },
+            {
+                "x": "790",
+                "y": "201",
+                "angle": "1.570796"
+            },
+            {
+                "x": "783",
+                "y": "249",
+                "angle": "1.842942"
+            },
+            {
+                "x": "749",
+                "y": "295",
+                "angle": "2.462179"
+            },
+            {
+                "x": "703",
+                "y": "313",
+                "angle": "2.878598"
+            },
+            {
+                "x": "651",
+                "y": "320",
+                "angle": "3.104573"
+            },
+            {
+                "x": "599",
+                "y": "321",
+                "angle": "3.141593"
+            },
+            {
+                "x": "541",
+                "y": "319",
+                "angle": "3.141593"
+            },
+            {
+                "x": "477",
+                "y": "319",
+                "angle": "3.141593"
+            },
+            {
+                "x": "424",
+                "y": "330",
+                "angle": "2.642246"
+            },
+            {
+                "x": "386",
+                "y": "368",
+                "angle": "2.163224"
+            },
+            {
+                "x": "368",
+                "y": "410",
+                "angle": "1.831399"
+            },
+            {
+                "x": "350",
+                "y": "452",
+                "angle": "2.163224"
+            },
+            {
+                "x": "308",
+                "y": "488",
+                "angle": "2.764683"
+            },
+            {
+                "x": "252",
+                "y": "493",
+                "angle": "-2.892006"
+            },
+            {
+                "x": "190",
+                "y": "464",
+                "angle": "-2.265535"
+            },
+            {
+                "x": "148",
+                "y": "417",
+                "angle": "-1.954324"
+            },
+            {
+                "x": "101",
+                "y": "373",
+                "angle": "-1.954324"
+            },
+            {
+                "x": "76",
+                "y": "319",
+                "angle": "-1.954324"
+            },
+            {
+                "x": "52",
+                "y": "263",
+                "angle": "-1.954324"
+            },
+            {
+                "x": "32",
+                "y": "210",
+                "angle": "-1.810028"
+            },
+            {
+                "x": "16",
+                "y": "156",
+                "angle": "-1.759018"
+            },
+            {
+                "x": "3",
+                "y": "108",
+                "angle": "-1.624798"
+            },
+            {
+                "x": "-2",
+                "y": "60",
+                "angle": "-1.570796"
+            },
+            {
+                "x": "0",
+                "y": "13",
+                "angle": "-1.570796"
+            }
+        ]
+    }
+}
