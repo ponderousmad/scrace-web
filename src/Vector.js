@@ -25,7 +25,29 @@ function vectorLength(v) {
     return Math.sqrt(vectorLengthSq(v));
 }
 
+function pointDistance(a, b) {
+    var xDiff = a.x - b.x;
+    var yDiff = a.y - b.y;
+    return Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+}
+
 function vectorNormalize(v) {
     var length = vectorLength(v);
     return new Vector(v.x / length, v.y / length);
+}
+
+function angleToVector(angle)
+{
+    return new Vector(Math.cos(angle), Math.sin(angle));
+}
+
+function clampAngle(angle) {
+    while (angle < -Math.PI) {
+        angle += 2 * Math.PI;
+    }
+
+    while (angle > Math.PI) {
+        angle -= 2 * Math.PI;
+    }
+    return angle;
 }

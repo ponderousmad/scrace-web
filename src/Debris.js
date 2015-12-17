@@ -98,13 +98,12 @@ var Debris = function(type, location, velocity) {
         }
         var xLoc = self.location.x + offset.x;
         var yLoc = self.location.y + offset.y;
-        var s = self.size();
-        var halfSize = s * 0.5;
+        var halfSize = self.size();
         
         context.save();        
         context.translate(xLoc, yLoc);
         context.rotate(self.angle);
-        context.drawImage(self.image, -halfSize, -halfSize, s, s);        
+        context.drawImage(self.image, -halfSize, -halfSize, self.image.width, self.image.height);        
         context.restore();
     }
 
@@ -114,8 +113,7 @@ var Debris = function(type, location, velocity) {
             return;
         }
         self.location = addVectors(self.location, self.velocity);
-        self.angle += self.spin;
-        self._clampAngle();
+        self.angle = clampAngle(self.angle + self.spin);
 
         for (var i = 0; i < planets.length; ++i)
         {
@@ -128,16 +126,6 @@ var Debris = function(type, location, velocity) {
                     self.velocity = addVectors(self.velocity, scaleVector(force, elapsed));
                 }
             }
-        }
-    }
-
-    this._clampAngle = function() {
-        while (self.angle < -Math.PI) {
-            self.angle += 2 * Math.PI;
-        }
-
-        while (self.angle > Math.PI) {
-            self.angle -= 2 * Math.PI;
         }
     }
 

@@ -856,7 +856,10 @@ window.onload = function(e) {
         new Debris(DebrisType.SmallAsteroid, new Vector(100,15)),
     ];
     
-    var gates = [];
+    var gates = [
+        new Gate(new Vector(100,0), 0),
+        new Gate(new Vector(200,0), 0.1)
+    ];
     var lastTime = getTimestamp();
     window.setInterval(function() {
         var now = getTimestamp();
@@ -877,6 +880,9 @@ window.onload = function(e) {
         }
         for(i = 0; i < debris.length; ++i) {
             debris[i].draw(context, offset);
+        }
+        for(i = 0; i < gates.length; ++i) {
+            gates[i].draw(context, offset, i == gates.length - 1);
         }
         player.draw(context, offset);
     }

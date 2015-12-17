@@ -154,7 +154,7 @@ var Player = function() {
             self.leftRetro = true;
             self.rightRearRetro = true;
         }
-        self._clampAngle();
+        self.angle = clampAngle(self.angle);
 
         for (var i = 0; i < planets.length; ++i) {
             var planet = planets[i];
@@ -179,8 +179,8 @@ var Player = function() {
         var last = null;
         for (i = 0; i < gates.length; ++i) {
             var g = gates[i];
-            g.UpdatePassed(before, self.location);
-            g.UpdatePassed(self.location, self.location + (getDirection(self.angle) * self.sprite.Width / 2.0));
+            g.checkPassed(before, self.location);
+            g.checkPassed(self.location, self.location + (getDirection(self.angle) * self.sprite.Width / 2.0));
             last = g;
         }
 
@@ -209,16 +209,6 @@ var Player = function() {
         }
         if (self._speedSquared() > self.kMaxSpeed * self.kMaxSpeed) {
             self.velocity = scaleVector(vectorNormalize(self.velocity), self.kMaxSpeed);
-        }
-    }
-
-    this._clampAngle = function() {
-        while (self.angle < -Math.PI) {
-            self.angle += 2 * Math.PI;
-        }
-
-        while (self.angle > Math.PI) {
-            self.angle -= 2 * Math.PI;
         }
     }
 
