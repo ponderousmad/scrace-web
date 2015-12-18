@@ -122,6 +122,7 @@ var Player = function() {
         var before = self.location;
         if (self.state === PlayerState.Dead || self.state === PlayerState.Finished) {
             if (keyboardState.isKeyDown(Keys.Reset)) {
+                console.log("Reset requested");
                 self.state = PlayerState.Reset;
             }
             return;

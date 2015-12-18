@@ -833,11 +833,12 @@ if (window.performance.now) {
     }
 }
 
-function loadLevel(resource, planets, debris, gates) {
+function loadLevel(resource, player, planets, debris, gates) {
     var request = new XMLHttpRequest();
     request.open("GET", resource, true);
     request.responseType = "json";
     request.onload = function() {
+        console.log("Loading " + resource);
         planetData = request.response["Planets"];
         planets.length = 0;
         for (var i = 0; i < planetData.length; ++i) {
@@ -865,6 +866,8 @@ function loadLevel(resource, planets, debris, gates) {
             var angle = parseFloat(gate.angle);
             gates.push(new Gate(location, angle));
         }
+        
+        player.reset(new Vector(0,0));
     };
     request.send();
 }
@@ -881,16 +884,40 @@ window.onload = function(e) {
     var debris = [];    
     var gates = [];
     var lastTime = getTimestamp();
+    var resetting = false;
     
-    loadLevel("/scrace/tracks/level1.json", planets, debris, gates);
+    loadLevel("/scrace/tracks/level1.json", player, planets, debris, gates);
     
     window.setInterval(function() {
         var now = getTimestamp();
         var delta = now - lastTime;
-        for(var i = 0; i < debris.length; ++i) {
+        for (var i = 0; i < debris.length; ++i) {
             debris[i].update(delta, planets);
         }
         player.update(delta, planets, debris, gates, keyboardState);
+        
+        if (player.state == PlayerState.Reset || player.state == PlayerState.Dead || player.state == PlayerState.Finished) {
+            if (!resetting) {              
+                for (var k = "1".charCodeAt(); k <= "5".charCodeAt(); ++k) {
+                    if (keyboardState.isKeyDown(k)) {
+                        resetting = true;
+                        loadLevel("/scrace/tracks/level" + String.fromCharCode(k) + ".json", player, planets, debris, gates);
+                    }
+                }
+                if(!resetting && player.state == PlayerState.Reset) {
+                    for (i = 0; i < debris.length; ++i) {
+                        debris[i].reset();
+                    }
+                    for (i = 0; i < gates.length; ++i) {
+                        gates[i].reset();
+                    }
+                    player.reset(new Vector(0,0));
+                }
+            }
+        } else if(resetting) {
+            resetting = false;
+        }
+        
         lastTime = now;
     }, timeStep);
     
@@ -898,13 +925,13 @@ window.onload = function(e) {
         var offset = addVectors(new Vector(canvas.width / 2, canvas.height /2), scaleVector(player.location,-1));
         requestAnimationFrame(draw);
         starfield.draw(context, offset, canvas.width, canvas.height);
-        for(var i = 0; i < planets.length; ++i) {
+        for (var i = 0; i < planets.length; ++i) {
             planets[i].draw(context, offset);
         }
-        for(i = 0; i < debris.length; ++i) {
+        for (i = 0; i < debris.length; ++i) {
             debris[i].draw(context, offset);
         }
-        for(i = 0; i < gates.length; ++i) {
+        for (i = 0; i < gates.length; ++i) {
             gates[i].draw(context, offset, i == gates.length - 1);
         }
         player.draw(context, offset);

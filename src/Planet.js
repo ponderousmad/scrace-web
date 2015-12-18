@@ -10,7 +10,7 @@ var PlanetType = {
 };
 
 var PlanetNames = {
-    "RingedPlanet" : PlanetType.Ringed,
+    "Ringed" : PlanetType.Ringed,
     "Planetoid" : PlanetType.Planetoid,
     "BrownRocky" : PlanetType.BrownRocky,
     "GreenGasGiant" : PlanetType.GreenGasGiant,
