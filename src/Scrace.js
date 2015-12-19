@@ -1,3 +1,5 @@
+"use strict";
+
 /*
 namespace RGG2010
 {
@@ -8,27 +10,8 @@ namespace RGG2010
     {
         private static readonly Vector2 kInitialScroll = new Vector2(400, 100);
 
-        private GraphicsDeviceManager mGraphics;
-        private SpriteBatch mSpriteBatch;
-
         private Starfield mStarfield = new Starfield();
         private Vector2 mScroll = kInitialScroll; 
-        private Player mPlayer = new Player();
-        private List<Planet> mPlanets = new List<Planet>();
-        private List<Debris> mDebris = new List<Debris>();
-        private List<Gate> mGates = new List<Gate>();
-
-        private Texture2D mStarterAmberOff = null;
-        private Texture2D mStarterAmberOn = null;
-        private Texture2D mStarterGreenOff = null;
-        private Texture2D mStarterGreenOn = null;
-        private SoundEffect mStarterDong = null;
-        private SoundEffect mStarterDing = null;
-
-        private Texture2D mIntroOverlay = null;
-
-        private SpriteFont mHudFont = null;
-        private SpriteFont mStatsHeaderFont = null;
 
         private bool mAllowEdits = false;
         private Planet mEditPlanet = null;
@@ -83,27 +66,6 @@ namespace RGG2010
 
         Dictionary<int,List<Stats>> mStats = new Dictionary<int,List<Stats>>();
 
-        private static string ContentBuildPath
-        {
-            get
-            {
-                string assemblyPath = System.IO.Path.GetDirectoryName(typeof(Scrace).Assembly.Location);
-                System.IO.DirectoryInfo path = new System.IO.DirectoryInfo(assemblyPath);
-                return System.IO.Path.Combine(path.Parent.Parent.Parent.FullName, "Content");
-            }
-        }
-
-        private System.IO.Stream Load(string resource)
-        {
-            return GetType().Assembly.GetManifestResourceStream(resource);
-        }
-
-        public Scrace()
-        {
-            mGraphics = new GraphicsDeviceManager(this);
-            Content.RootDirectory = "Content";
-        }
-
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
         /// This is where it can query for any required services and load any non-graphic
@@ -112,79 +74,9 @@ namespace RGG2010
         /// </summary>
         protected override void Initialize()
         {
-            base.Initialize();
-            IsMouseVisible = true;
-            mPlayer.Reset(new Vector2(0, 0));
             for (int i = 1; i <= kLevels; ++i)
             {
                 mStats[i] = new List<Stats>();
-            }
-        }
-
-        /// <summary>
-        /// LoadContent will be called once per game and is the place to load
-        /// all of your content.
-        /// </summary>
-        protected override void LoadContent()
-        {
-            // Create a new SpriteBatch, which can be used to draw textures.
-            mSpriteBatch = new SpriteBatch(GraphicsDevice);
-
-            mHudFont = Content.Load<SpriteFont>("Fonts/HudFont");
-            mStatsHeaderFont = Content.Load<SpriteFont>("Fonts/StatsHeaderFont");
-            mIntroOverlay = Content.Load<Texture2D>("Fonts/IntroOverlay");
-
-            mStarterAmberOff = Content.Load<Texture2D>("Gates/AmberLightOff");
-            mStarterAmberOn = Content.Load<Texture2D>("Gates/AmberLightOn");
-            mStarterGreenOff = Content.Load<Texture2D>("Gates/GreenLightOff");
-            mStarterGreenOn = Content.Load<Texture2D>("Gates/GreenLightOn");
-            mStarterDong = Content.Load<SoundEffect>("Sounds/Dong");
-            mStarterDing = Content.Load<SoundEffect>("Sounds/Ding");
-
-            mPlayer.LoadContent(Content);
-            Planet.LoadImages(Content);
-            Debris.LoadImages(Content);
-            Gate.LoadContent(Content);
-            mStarfield.LoadImages(Content);
-            mStarfield.Populate(5000, 5000, 0.0005f);
-
-            LoadLevel(1);
-
-            MediaPlayer.IsRepeating = true;
-            MediaPlayer.Volume *= 0.6f;
-            //MediaPlayer.Play(Content.Load<Song>("Sounds/Music"));
-        }
-
-        private void LoadLevel(int number)
-        {
-            if (number <= 0 || mLevel == number || kLevels < number)
-            {
-                return;
-            }
-            mScroll = kInitialScroll;
-            mLevel = number;
-
-            mPlanets.Clear();
-            mDebris.Clear();
-            mGates.Clear();
-
-            using (System.IO.Stream stream = Load("RGG2010.Content.Levels.Level" + number.ToString() + ".xml"))
-            using (System.IO.TextReader reader = new System.IO.StreamReader(stream))
-            {
-                XDocument doc = System.Xml.Linq.XDocument.Load(reader);
-                XElement root = doc.Elements("Level").First();
-                foreach (XElement e in root.Elements("Planet"))
-                {
-                    mPlanets.Add(new Planet(e.Read<PlanetType>("type"), e.ReadVector2(), e.ReadFloat("gravity")));
-                }
-                foreach (XElement e in root.Elements("Debris"))
-                {
-                    mDebris.Add(new Debris(e.Read<DebrisType>("type"), e.ReadVector2()));
-                }
-                foreach (XElement e in root.Elements("Gate"))
-                {
-                    mGates.Add(new Gate(e.ReadVector2(), e.ReadFloat("angle")));
-                }
             }
         }
 
@@ -209,14 +101,6 @@ namespace RGG2010
             }
         }
 
-        /// <summary>
-        /// UnloadContent will be called once per game and is the place to unload
-        /// all content.
-        /// </summary>
-        protected override void UnloadContent()
-        {
-            // TODO: Unload any non ContentManager content here
-        }
 
         /// <summary>
         /// Allows the game to run logic such as updating the world,
@@ -225,10 +109,6 @@ namespace RGG2010
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            // Allows the game to exit
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
-                this.Exit();
-
             KeyboardState keyboard = Keyboard.GetState();
 
             if(keyboard.IsKeyDown(Keys.Escape))
@@ -801,25 +681,7 @@ namespace RGG2010
 }
 */
 
-var KeyboardState = function(element) {
-    this.pressed = {};
-    var self = this;
-    
-    element.onkeydown = function(e){
-        e = e || window.event;
-        self.pressed[e.keyCode] = true;
-    }
-
-    element.onkeyup = function(e){
-        e = e || window.event;
-        delete self.pressed[e.keyCode];
-    }
-    
-    this.isKeyDown = function(keyCode) {
-        return self.pressed[keyCode] ? true : false;
-    }
-}
-
+var getTimestamp = null;
 if (window.performance.now) {
     console.log("Using high performance timer");
     getTimestamp = function() { return window.performance.now(); };
@@ -833,108 +695,140 @@ if (window.performance.now) {
     }
 }
 
-function loadLevel(resource, player, planets, debris, gates) {
-    var request = new XMLHttpRequest();
-    request.open("GET", resource, true);
-    request.responseType = "json";
-    request.onload = function() {
-        console.log("Loading " + resource);
-        planetData = request.response["Planets"];
-        planets.length = 0;
-        for (var i = 0; i < planetData.length; ++i) {
-            var planet = planetData[i];
-            var location = parseVector(planet);
-            var type = PlanetNames[planet.type];
-            planets.push(new Planet(type, location, planet.gravity));
-        }
-        
-        debrisData = request.response["Debris"];
-        debris.length = 0;
-        for (i = 0; i < debrisData.length; ++i) {
-            var d = debrisData[i];
-            var location = parseVector(d);
-            var velocity = d.velocity ? parseVector(d.velocity) : null;
-            var type = DebrisNames[d.type];
-            debris.push(new Debris(type, location, velocity));
-        }
-        
-        gatesData = request.response["Gates"];
-        gates.length = 0;
-        for (var i = 0; i < gatesData.length; ++i) {
-            var gate = gatesData[i];
-            var location = parseVector(gate);
-            var angle = parseFloat(gate.angle);
-            gates.push(new Gate(location, angle));
-        }
-        
-        player.reset(new Vector(0,0));
-    };
-    request.send();
-}
+var Scrace = function() {
+    var uiBatch = new ImageBatch("/scrace/images/ui/");
+    
+    this.starterAmberOff = uiBatch.load("AmberLightOff.png");
+    this.starterAmberOn =  uiBatch.load("AmberLightOn.png");
+    this.starterGreenOff = uiBatch.load("GreenLightOff.png");
+    this.starterGreenOn =  uiBatch.load("GreenLightOn.png");
+    this.introOverlay =    uiBatch.load("IntroOverlay.png");
+    
+    uiBatch.commit();
 
-window.onload = function(e) {
-    console.log("window.onload", e, Date.now())
-    var canvas = document.getElementById("canvas");
-    var starfield = new Starfield(5000, 5000, 0.001, 0.95, true);
-    var player = new Player();
-    var context = canvas.getContext("2d");
-    var keyboardState = new KeyboardState(window);
-    var timeStep = 16;
-    var planets = [];
-    var debris = [];    
-    var gates = [];
-    var lastTime = getTimestamp();
-    var resetting = false;
+    this.starterDong = new SoundEffect("/scrace/audio/Dong.wav");
+    this.starterDing = new SoundEffect("/scrace/audio/Ding.wav");
     
-    loadLevel("/scrace/tracks/level1.json", player, planets, debris, gates);
+    this.starfield = new Starfield(5000, 5000, 0.001, 0.95, true);
+    this.planets = [];
+    this.debris = [];
+    this.gates = [];
+    this.player = new Player();
     
-    window.setInterval(function() {
-        var now = getTimestamp();
-        var delta = now - lastTime;
-        for (var i = 0; i < debris.length; ++i) {
-            debris[i].update(delta, planets);
+    this.resetting = false;
+    this.lastTime = getTimestamp();
+    
+    this.canvas = document.getElementById("canvas");
+    this.context = canvas.getContext("2d");
+    this.keyboardState = new KeyboardState(window);
+    
+    var self = this;
+
+    this.loadLevel = function(resource) {
+        var request = new XMLHttpRequest();
+        request.open("GET", resource, true);
+        request.responseType = "json";
+        request.onload = function() {
+            console.log("Loading " + resource);
+            var planetData = request.response["Planets"];
+            self.planets.length = 0;
+            for (var i = 0; i < planetData.length; ++i) {
+                var planet = planetData[i];
+                var location = parseVector(planet);
+                var type = PlanetNames[planet.type];
+                self.planets.push(new Planet(type, location, planet.gravity));
+            }
+            
+            var debrisData = request.response["Debris"];
+            self.debris.length = 0;
+            for (i = 0; i < debrisData.length; ++i) {
+                var d = debrisData[i];
+                var location = parseVector(d);
+                var velocity = d.velocity ? parseVector(d.velocity) : null;
+                var type = DebrisNames[d.type];
+                self.debris.push(new Debris(type, location, velocity));
+            }
+            
+            var gatesData = request.response["Gates"];
+            self.gates.length = 0;
+            for (var i = 0; i < gatesData.length; ++i) {
+                var gate = gatesData[i];
+                var location = parseVector(gate);
+                var angle = parseFloat(gate.angle);
+                self.gates.push(new Gate(location, angle));
+            }
+            
+            self.player.reset(new Vector(0,0));
+            self.lastTime = getTimestamp();
+        };
+        request.send();
+    }
+    
+    this.resetLevel = function() {
+        var filteredDebris = []
+        for (var i = self.debris.length - 1; i >= 0; --i) {
+            if (self.debris[i].isPlayerDebris()) {
+                self.debris.splice(i, 1)
+            } else {
+                self.debris[i].reset();
+            }
         }
-        player.update(delta, planets, debris, gates, keyboardState);
+        for (i = 0; i < self.gates.length; ++i) {
+            self.gates[i].reset();
+        }
+        self.player.reset(new Vector(0,0));
+    }
+   
+    this.update = function() {
+        var now = getTimestamp();
+        var delta = now - self.lastTime;
+        for (var i = 0; i < self.debris.length; ++i) {
+            self.debris[i].update(delta, self.planets);
+        }
+        var player = self.player;
+        player.update(delta, self.planets, self.debris, self.gates, self.keyboardState);
         
         if (player.state == PlayerState.Reset || player.state == PlayerState.Dead || player.state == PlayerState.Finished) {
-            if (!resetting) {              
+            if (!self.resetting) {              
                 for (var k = "1".charCodeAt(); k <= "5".charCodeAt(); ++k) {
-                    if (keyboardState.isKeyDown(k)) {
-                        resetting = true;
-                        loadLevel("/scrace/tracks/level" + String.fromCharCode(k) + ".json", player, planets, debris, gates);
+                    if (self.keyboardState.isKeyDown(k)) {
+                        self.resetting = true;
+                        self.loadLevel("/scrace/tracks/level" + String.fromCharCode(k) + ".json");
                     }
                 }
-                if(!resetting && player.state == PlayerState.Reset) {
-                    for (i = 0; i < debris.length; ++i) {
-                        debris[i].reset();
-                    }
-                    for (i = 0; i < gates.length; ++i) {
-                        gates[i].reset();
-                    }
-                    player.reset(new Vector(0,0));
+                
+                if(!self.resetting && player.state == PlayerState.Reset) {
+                    self.resetLevel();
                 }
             }
-        } else if(resetting) {
-            resetting = false;
+        } else if(self.resetting) {
+            self.resetting = false;
         }
         
-        lastTime = now;
-    }, timeStep);
-    
-    function draw() {
-        var offset = addVectors(new Vector(canvas.width / 2, canvas.height /2), scaleVector(player.location,-1));
-        requestAnimationFrame(draw);
-        starfield.draw(context, offset, canvas.width, canvas.height);
-        for (var i = 0; i < planets.length; ++i) {
-            planets[i].draw(context, offset);
-        }
-        for (i = 0; i < debris.length; ++i) {
-            debris[i].draw(context, offset);
-        }
-        for (i = 0; i < gates.length; ++i) {
-            gates[i].draw(context, offset, i == gates.length - 1);
-        }
-        player.draw(context, offset);
+        self.lastTime = now;
     }
-    draw();
+    
+    this.draw = function() {
+        requestAnimationFrame(self.draw);
+        var offset = addVectors(new Vector(self.canvas.width / 2, self.canvas.height /2), scaleVector(self.player.location,-1));
+        self.starfield.draw(self.context, offset, self.canvas.width, self.canvas.height);
+        for (var i = 0; i < self.planets.length; ++i) {
+            self.planets[i].draw(self.context, offset);
+        }
+        for (i = 0; i < self.debris.length; ++i) {
+            self.debris[i].draw(self.context, offset);
+        }
+        for (i = 0; i < self.gates.length; ++i) {
+            self.gates[i].draw(self.context, offset, i == self.gates.length - 1);
+        }
+        self.player.draw(self.context, offset);
+    }
+};
+
+window.onload = function(e) {
+    console.log("window.onload", e, Date.now())    
+    var scrace = new Scrace(); 
+    scrace.loadLevel("/scrace/tracks/level1.json");
+    window.setInterval(scrace.update, 16);
+    scrace.draw();
 };
