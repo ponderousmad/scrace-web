@@ -34,54 +34,62 @@ var Planet = function(type, location, gravity) {
     this.image = planetImages[type];
     this.location = location;
     this.gravity = gravity;
-    
-    var self = this;
-    
-    this.store = function() {
-        /*
-        using (IDataWriter element = doc["Planet"])
-        {
-            element.Attribute("type", mType.ToString());
-            element.Attribute("gravity", DocumentWriter.AsString(mGravity));
-            DocumentWriter.WriteVector(element, mLocation);
-        }
-        */
-    }
-    
-    this.size = function() {
-        if(self.type === PlanetType.Ringed || !planetsBatch.loaded) {
-            return 30.0;
-        } else {
-            return self.image.width / 2.0;
-        }
-    }
 
-    this.contains = function(point) {
-        return vectorLength(subVectors(self.location, point)) < self.size();
+    this._size = null;
+    this._halfSize = null;
+}
+    
+Planet.prototype.store = function() {
+    /*
+    using (IDataWriter element = doc["Planet"])
+    {
+        element.Attribute("type", mType.ToString());
+        element.Attribute("gravity", DocumentWriter.AsString(mGravity));
+        DocumentWriter.WriteVector(element, mLocation);
     }
+    */
+}
 
-    this.draw = function(context, offset) {
+Planet.prototype.size = function() {
+    if(this._size == null) {
         if (!planetsBatch.loaded) {
-            return;
+            return 1;
+        } else if(this.type === PlanetType.Ringed) {
+            this._size = 30.0;
+        } else {
+            this._size = this.image.width / 2.0;
         }
-        var drawPosition = addVectors(self.location, offset);
-        var width = self.image.width;
-        var height = self.image.height;
-        context.drawImage(self.image, drawPosition.x - width * .5, drawPosition.y - height * .5, width, height);
     }
+    return this._size;
+}
 
-    this.determineForce = function(location, maxDistSq) {
-        var fromPlanet = subVectors(self.location, location);
-        var distanceSq = vectorLengthSq(fromPlanet);
-        if (distanceSq > maxDistSq)
-        {
-            return null;
-        }
-        var distance = Math.sqrt(distanceSq)
-        if (distance < self.size()) {
-            return "crash";
-        }
-        var force = self.gravity / distanceSq;
-        return scaleVector(fromPlanet, force / distance);
+Planet.prototype.contains = function(point) {
+    return vectorLength(subVectors(this.location, point)) < this.size();
+}
+
+Planet.prototype.draw = function(context, offset) {
+    if (!planetsBatch.loaded) {
+        return;
+    } else if(this.halfSize == null) {
+        this.halfSize = new Vector(this.image.width * 0.5, this.image.height * 0.5);
     }
+    var drawLocation = addVectors(this.location, offset);
+    drawLocation.sub(this.halfSize);
+    context.drawImage(this.image, drawLocation.x, drawLocation.y);
+}
+
+Planet.prototype.determineForce = function(location, maxDistSq) {    
+    var fromPlanet = subVectors(this.location, location);
+    var distanceSq = vectorLengthSq(fromPlanet);
+    if (distanceSq > maxDistSq)
+    {
+        return null;
+    }
+    var distance = Math.sqrt(distanceSq)
+    if (distance < this.size()) {
+        return "crash";
+    }
+    var force = this.gravity / distanceSq;
+    fromPlanet.scale(force / distance);
+    return fromPlanet;
 }

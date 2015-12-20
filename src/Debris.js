@@ -118,7 +118,7 @@ Debris.prototype.update = function(elapsed, planets) {
     {
         return;
     }
-    this.location = addVectors(this.location, this.velocity);
+    this.location.add(this.velocity);
     this.angle = clampAngle(this.angle + this.spin);
 
     for (var i = 0; i < planets.length; ++i)
@@ -129,7 +129,8 @@ Debris.prototype.update = function(elapsed, planets) {
             if (force === "crash") {
                 this.destroyed = true;
             } else {
-                this.velocity = addVectors(this.velocity, scaleVector(force, elapsed));
+                force.scale(elapsed);
+                this.velocity.add(force);
             }
         }
     }
