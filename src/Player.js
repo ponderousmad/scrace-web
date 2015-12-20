@@ -119,7 +119,7 @@ var Player = function() {
     }
 
     this.update = function(elapsed, planets, debris, gates, keyboardState) {
-        var before = self.location;
+        var before = self.location.clone();
         if (self.state === PlayerState.Dead || self.state === PlayerState.Finished) {
             if (keyboardState.isKeyDown(Keys.Reset)) {
                 console.log("Reset requested");
