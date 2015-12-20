@@ -172,7 +172,7 @@ var Player = function() {
         for (i = 0; i < debris.length; ++i) {
             var d = debris[i];
             var size = d.size() + kPlayerSize;
-            if (vectorLengthSq(subVectors(self.location, d.location)) < (size * size)) {
+            if (pointDistanceSq(self.location, d.location) < (size * size)) {
                 self.crash(debris);
             }
         }
@@ -191,7 +191,7 @@ var Player = function() {
         }
 
         if ((thrust & Thrusters.Accelerate) == Thrusters.Accelerate) {
-            self.velocity = addVectors(self.velocity, scaleVector(direction, kMaxAcceleration * elapsed));
+            self.velocity.add(scaleVector(direction, kMaxAcceleration * elapsed));
             self.thrusting = true;
         } else if ((thrust & Thrusters.Break) == Thrusters.Break) {
             var mag = self._speedSquared();
@@ -202,9 +202,9 @@ var Player = function() {
                 self.leftRearRetro = true;
 
                 if (mag < (kMaxBreak * kMaxBreak * elapsed * elapsed)) {
-                    self.velocity = new Vector(0, 0);
+                    self.velocity.set(0, 0);
                 } else {
-                    self.velocity = addVectors(self.velocity, scaleVector(vectorNormalize(self.velocity), -kMaxBreak * elapsed));
+                    self.velocity.add(scaleVector(vectorNormalize(self.velocity), -kMaxBreak * elapsed));
                 }
             }
         }

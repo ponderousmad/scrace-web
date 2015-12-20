@@ -64,7 +64,7 @@ Planet.prototype.size = function() {
 }
 
 Planet.prototype.contains = function(point) {
-    return vectorLength(subVectors(this.location, point)) < this.size();
+    return pointDistance(this.location, point) < this.size();
 }
 
 Planet.prototype.draw = function(context, offset) {
@@ -80,7 +80,7 @@ Planet.prototype.draw = function(context, offset) {
 
 Planet.prototype.determineForce = function(location, maxDistSq) {    
     var fromPlanet = subVectors(this.location, location);
-    var distanceSq = vectorLengthSq(fromPlanet);
+    var distanceSq = fromPlanet.lengthSq();
     if (distanceSq > maxDistSq)
     {
         return null;

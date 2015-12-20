@@ -33,7 +33,7 @@ var Debris = function(type, location, velocity) {
     this.angle = Math.random() * 2 * Math.PI;
     this.spin = Math.random() * this.kMaxSpin;
     this.location = location;
-    this.startLocation = location;
+    this.startLocation = location.clone();
     this.velocity = velocity || new Vector(0,0);
     this.startVelocity = velocity;
     this.type = type;
@@ -49,8 +49,8 @@ Debris.prototype.setStartVelocity = function(velocity)
 
 Debris.prototype.reset = function()
 {
-    this.location = this.startLocation;
-    this.velocity = this.startVelocity || new Vector(0, 0);
+    this.location = this.startLocation.clone();
+    this.velocity = this.startVelocity ? this.startVelocity.clone() : new Vector(0, 0);
     this.destroyed = false;
 }
 
@@ -90,7 +90,7 @@ Debris.prototype.setLocation = function(vector) {
 }
 
 Debris.prototype.contains = function(point) {
-    return vectorLength(subVectors(this.location, point)) < this.size() * 1.25;
+    return pointDistance(this.location, point) < this.size() * 1.25;
 }
 
 Debris.prototype.setDebrisType = function(type) {

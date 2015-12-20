@@ -5,6 +5,10 @@ function Vector(x, y) {
     this.y = y;   
 }
 
+Vector.prototype.clone = function() {
+    return new Vector(this.x, this.y);
+}
+
 Vector.prototype.set = function(x, y) {
     this.x = x;
     this.y = y;
@@ -25,6 +29,20 @@ Vector.prototype.scale = function(s) {
     this.y *= s;
 }
 
+Vector.prototype.lengthSq = function() {
+    return this.x * this.x + this.y * this.y;
+}
+
+Vector.prototype.length = function() {
+    return Math.sqrt(this.x * this.x + this.y * this.y);
+}
+
+Vector.prototype.normalize = function() {    
+    var length = this.length();
+    this.x /= length;
+    this.y /= length;
+}
+
 function scaleVector(p, s) {
     return new Vector(p.x * s, p.y * s);
 }
@@ -37,22 +55,18 @@ function subVectors(a, b) {
     return new Vector(a.x - b.x, a.y - b.y);
 }
 
-function vectorLengthSq(v) {
-    return v.x * v.x + v.y * v.y;
-}
-
-function vectorLength(v) {
-    return Math.sqrt(vectorLengthSq(v));
-}
-
-function pointDistance(a, b) {
+function pointDistanceSq(a, b) {
     var xDiff = a.x - b.x;
     var yDiff = a.y - b.y;
-    return Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+    return xDiff * xDiff + yDiff * yDiff;
+}
+
+function pointDistance(a,b) {
+    return Math.sqrt(pointDistanceSq(a,b));
 }
 
 function vectorNormalize(v) {
-    var length = vectorLength(v);
+    var length = v.length();
     return new Vector(v.x / length, v.y / length);
 }
 
