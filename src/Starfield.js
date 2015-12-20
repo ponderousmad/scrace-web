@@ -30,25 +30,26 @@ function Starfield(width, height, density, maxDepth, infrequentAreFar) {
         this.location = location;
         this.distance = distance;
         this.image = image;
-
-        this.tiledLocation = function(offset, tileSize)
+        this.size = new Vector(image.width, image.height);
+        this.drawLocation = new Vector(0,0);
+    }
+    
+    Visual.prototype.updateLocation = function(offset, tileSize)
+    {
+        var scaleFactor = 1.0 - this.distance;
+        var offsetLocation = addVectors(this.location, addVectors(scaleVector(offset, scaleFactor), this.size));
+        var distanceSize = scaleVector(tileSize, 1 /  scaleFactor);
+        var tiledX = offsetLocation.x % distanceSize.x;
+        if(tiledX < 0)
         {
-            var size = new Vector(image.width, image.height)
-            var scaleFactor = 1.0 - this.distance;
-            var offsetLocation = addVectors(this.location, addVectors(scaleVector(offset, scaleFactor), size));
-            var distanceSize = scaleVector(tileSize, 1 /  scaleFactor);
-            var tiledX = offsetLocation.x % distanceSize.x;
-            if(tiledX < 0)
-            {
-                tiledX += distanceSize.x;
-            }
-            var tiledY = offsetLocation.y % distanceSize.y;
-            if(tiledY < 0)
-            {
-                tiledY += distanceSize.y;
-            }
-            return new Vector(tiledX - size.x, tiledY - size.y);
+            tiledX += distanceSize.x;
         }
+        var tiledY = offsetLocation.y % distanceSize.y;
+        if(tiledY < 0)
+        {
+            tiledY += distanceSize.y;
+        }
+        this.drawLocation.set(tiledX - this.size.x, tiledY - this.size.y);
     }
   
     this.populate = function() {
@@ -93,12 +94,12 @@ function Starfield(width, height, density, maxDepth, infrequentAreFar) {
         for (var i = 0; i < self.visuals.length; ++i)
         {
             var v = self.visuals[i];
-            var location = v.tiledLocation(offset, self.size);
-            if (location.x < -self.maxImageSize.x || width < location.x)
+            v.updateLocation(offset, self.size);
+            if (v.drawLocation.x < -self.maxImageSize.x || width < v.drawLocation.x)
                 continue;
-            if (location.y < -self.maxImageSize.y || height < location.y)
+            if (v.drawLocation.y < -self.maxImageSize.y || height < v.drawLocation.y)
                 continue;
-            context.drawImage(v.image, location.x, location.y);
+            context.drawImage(v.image, v.drawLocation.x, v.drawLocation.y);
         }
     }
     

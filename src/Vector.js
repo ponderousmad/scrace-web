@@ -2,7 +2,27 @@
 
 function Vector(x, y) {
     this.x = x;
+    this.y = y;   
+}
+
+Vector.prototype.set = function(x, y) {
+    this.x = x;
     this.y = y;
+}
+
+Vector.prototype.add = function(v) {
+    this.x += v.x;
+    this.y += v.y;
+}
+
+Vector.prototype.sub = function(v) {
+    this.x -= v.x;
+    this.y -= v.y;
+}
+
+Vector.prototype.scale = function(s) {
+    this.x *= s;
+    this.y *= s;
 }
 
 function scaleVector(p, s) {
