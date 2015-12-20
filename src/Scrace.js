@@ -24,10 +24,6 @@ namespace RGG2010
 
         private int mLevel = 0;
 
-        private const float kWarmupDelay = 1000;
-        private const float kLightLength = 1000;
-        private const float kTotalStartDelay = kWarmupDelay + 2 * kLightLength;
-
         private const int kLevels = 5;
 
         private float? mStarter = null;
@@ -264,11 +260,6 @@ namespace RGG2010
                 mAllowEdits = true;
             }
 #endif
-        }
-
-        private bool RaceStarted()
-        {
-            return mStarter != null && mStarter.Value >= kTotalStartDelay;
         }
 
         private void ResetDebris()
@@ -617,60 +608,6 @@ namespace RGG2010
             DrawHud(gameTime);
         }
 
-        private void DrawHud(GameTime gameTime)
-        {
-            Rectangle titleSafeArea = GraphicsDevice.Viewport.TitleSafeArea;
-            Vector2 hudLocation = new Vector2(titleSafeArea.X, titleSafeArea.Y);
-
-            mSpriteBatch.Begin();
-
-            Vector2 center = hudLocation + new Vector2(titleSafeArea.Width / 2.0f, titleSafeArea.Height / 2.0f);
-
-            if (mStarter != null)
-            {
-                bool lightOneOn = mStarter.Value > kWarmupDelay;
-                bool lightTwoOn = mStarter.Value > kWarmupDelay + kLightLength;
-                bool lightThreeOn = mStarter.Value > kTotalStartDelay;
-                if (mStarter.Value < kTotalStartDelay + kLightLength)
-                {
-                    mSpriteBatch.Draw(lightOneOn ? mStarterAmberOn : mStarterAmberOff, center - new Vector2(160, 250), Color.White);
-                    mSpriteBatch.Draw(lightTwoOn ? mStarterAmberOn : mStarterAmberOff, center - new Vector2(50, 250), Color.White);
-                    mSpriteBatch.Draw(lightThreeOn ? mStarterGreenOn : mStarterGreenOff, center - new Vector2(-60, 250), Color.White);
-                }
-
-                float time = mStarter.Value - kTotalStartDelay;
-                TimeSpan raceTime = TimeSpan.FromMilliseconds(Math.Abs(time));
-
-                mSpriteBatch.DrawString(mHudFont, string.Format("Race Time: {3}{0:00}:{1:00}:{2:000}", raceTime.Minutes, raceTime.Seconds, raceTime.Milliseconds, (time < 0 ? "-" : " ")), hudLocation, Color.LimeGreen);
-            }
-            else if(!mAllowEdits)
-            {
-                mSpriteBatch.Draw(mIntroOverlay, center + new Vector2(-mIntroOverlay.Width / 2.0f, 20), Color.White);
-                if (mRaceTime > 0 && gameTime.TotalGameTime.Seconds % 2 == 0)
-                {
-                    Color color = mPlayer.State == PlayerState.Finished ? Color.LimeGreen : Color.Red;
-                    TimeSpan raceTime = TimeSpan.FromMilliseconds(mRaceTime);
-                    mSpriteBatch.DrawString(mHudFont, string.Format("Race Time: {0:00}:{1:00}:{2:000} + {3} Gates Missed", raceTime.Minutes, raceTime.Seconds, raceTime.Milliseconds, mGates.Where(x => !x.HasPassed).Count()), hudLocation, color);
-                }
-
-                if (mStats[mLevel].Count > 0)
-                {
-                    Vector2 statsLocation = center - new Vector2(160, 200);
-
-                    string line = "          Best Times";
-                    DrawStat(mStatsHeaderFont, line, ref statsLocation);
-
-                    foreach (string timeLine in mStats[mLevel].OrderBy(x => x.Rating).Take(5).Select(x => x.Formatted()))
-                    {
-                        DrawStat(mHudFont, timeLine, ref statsLocation);
-                    }
-                }
-            }
-            mSpriteBatch.End();
-        }
-
-
-
         private void DrawStat(SpriteFont font, string line, ref Vector2 statsLocation)
         {
             const float kPad = 10;
@@ -696,6 +633,10 @@ if (window.performance.now) {
 }
 
 var Scrace = function() {
+    var kWarmupDelay = 1000;
+    var kLightLength = 1000;
+    var kTotalStartDelay = kWarmupDelay + 2 * kLightLength;
+    
     var uiBatch = new ImageBatch("/scrace/images/ui/");
     
     this.starterAmberOff = uiBatch.load("AmberLightOff.png");
@@ -717,6 +658,9 @@ var Scrace = function() {
     
     this.resetting = false;
     this.lastTime = getTimestamp();
+    
+    this.starter = null;
+    this.allowEdits = false;
     
     this.canvas = document.getElementById("canvas");
     this.context = canvas.getContext("2d");
@@ -758,8 +702,7 @@ var Scrace = function() {
                 self.gates.push(new Gate(location, angle));
             }
             
-            self.player.reset(new Vector(0,0));
-            self.lastTime = getTimestamp();
+            self.setupStart();
         };
         request.send();
     }
@@ -776,7 +719,18 @@ var Scrace = function() {
         for (i = 0; i < self.gates.length; ++i) {
             self.gates[i].reset();
         }
+        self.setupStart();
+    }
+    
+    this.setupStart = function() {
         self.player.reset(new Vector(0,0));
+        self.lastTime = getTimestamp();
+        self.starter = 0;
+        self.paused = true;
+    }
+    
+    this.raceStarted = function() {
+        return self.starter != null && self.starter >= kTotalStartDelay;
     }
    
     this.update = function() {
@@ -786,9 +740,30 @@ var Scrace = function() {
             self.debris[i].update(delta, self.planets);
         }
         var player = self.player;
-        player.update(delta, self.planets, self.debris, self.gates, self.keyboardState);
+
+        if (self.starter != null) {
+            if (self.starter < kWarmupDelay && self.starter + delta > kWarmupDelay)
+            {
+                self.starterDong.play();
+            }
+            else if (self.starter < kWarmupDelay + kLightLength && self.starter + delta > kWarmupDelay + kLightLength)
+            {
+                self.starterDong.play();
+            }
+            else if ((!self.raceStarted()) && (self.starter + delta) > kTotalStartDelay)
+            {
+                self.starterDing.play();
+                self.paused = false;
+            }
+            self.starter += delta;
+        }
+        
+        if (!self.paused) {
+            player.update(delta, self.planets, self.debris, self.gates, self.keyboardState);
+        }
         
         if (player.state == PlayerState.Reset || player.state == PlayerState.Dead || player.state == PlayerState.Finished) {
+            self.starter = null;
             if (!self.resetting) {              
                 for (var k = "1".charCodeAt(); k <= "5".charCodeAt(); ++k) {
                     if (self.keyboardState.isKeyDown(k)) {
@@ -808,6 +783,72 @@ var Scrace = function() {
         self.lastTime = now;
     }
     
+    this.formatTime = function(totalMilliseconds) {
+        var showTime = Math.abs(totalMilliseconds);
+        var minutes = Math.floor(showTime / 60000.0);
+        if (minutes < 10) {
+            minutes = "0" + minutes;
+        }
+        showTime -= minutes * 60000;
+        var seconds = Math.floor(showTime / 1000);
+        if (seconds < 10) {
+            seconds = "0" + seconds;
+        }
+        var milliseconds = Math.floor(showTime - (seconds * 1000))
+        if (milliseconds < 100) {
+            if (milliseconds < 10) {
+                milliseconds = "00" + milliseconds;
+            } else {
+                milliseconds = "0" + milliseconds;
+            }
+        }
+        return (totalMilliseconds < 0 ? "-" : " ") + minutes + ":" + seconds + ":" + milliseconds
+    }
+    
+    this.drawHud = function() {
+        var center = canvas.width * .5;
+
+        if (self.starter != null) {
+            var lightOneOn = self.starter > kWarmupDelay;
+            var lightTwoOn = self.starter > kWarmupDelay + kLightLength;
+            var lightThreeOn = self.starter > kTotalStartDelay;
+            var lightSize = self.starterAmberOn.width;
+            if (self.starter < kTotalStartDelay + kLightLength) {
+                self.context.drawImage(lightOneOn   ? self.starterAmberOn : self.starterAmberOff, center - (lightSize * 2), 40);
+                self.context.drawImage(lightTwoOn   ? self.starterAmberOn : self.starterAmberOff, center - (lightSize * 0.5), 40);
+                self.context.drawImage(lightThreeOn ? self.starterGreenOn : self.starterGreenOff, center + lightSize, 40);
+            }
+
+            var time = self.starter - kTotalStartDelay;
+
+            self.context.fillStyle = "rgb(0,255,0)";
+            self.context.fillText("Race Time: " + self.formatTime(time), 20,20);
+        } else if(!self.allowEdits) {
+            /*
+            mSpriteBatch.Draw(mIntroOverlay, center + new Vector2(-mIntroOverlay.Width / 2.0f, 20), Color.White);
+            if (mRaceTime > 0 && gameTime.TotalGameTime.Seconds % 2 == 0)
+            {
+                Color color = mPlayer.State == PlayerState.Finished ? Color.LimeGreen : Color.Red;
+                TimeSpan raceTime = TimeSpan.FromMilliseconds(mRaceTime);
+                mSpriteBatch.DrawString(mHudFont, string.Format("Race Time: {0:00}:{1:00}:{2:000} + {3} Gates Missed", raceTime.Minutes, raceTime.Seconds, raceTime.Milliseconds, mGates.Where(x => !x.HasPassed).Count()), hudLocation, color);
+            }
+
+            if (mStats[mLevel].Count > 0)
+            {
+                Vector2 statsLocation = center - new Vector2(160, 200);
+
+                string line = "          Best Times";
+                DrawStat(mStatsHeaderFont, line, ref statsLocation);
+
+                foreach (string timeLine in mStats[mLevel].OrderBy(x => x.Rating).Take(5).Select(x => x.Formatted()))
+                {
+                    DrawStat(mHudFont, timeLine, ref statsLocation);
+                }
+            }
+            */
+        }
+    }
+    
     this.draw = function() {
         requestAnimationFrame(self.draw);
         var offset = addVectors(new Vector(self.canvas.width / 2, self.canvas.height /2), scaleVector(self.player.location,-1));
@@ -822,6 +863,8 @@ var Scrace = function() {
             self.gates[i].draw(self.context, offset, i == self.gates.length - 1);
         }
         self.player.draw(self.context, offset);
+        
+        self.drawHud();
     }
 };
 
