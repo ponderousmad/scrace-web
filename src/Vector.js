@@ -19,6 +19,11 @@ Vector.prototype.add = function(v) {
     this.y += v.y;
 }
 
+Vector.prototype.addScaled = function(v, s) {
+    this.x += v.x * s;
+    this.y += v.y * s;
+}
+
 Vector.prototype.sub = function(v) {
     this.x -= v.x;
     this.y -= v.y;

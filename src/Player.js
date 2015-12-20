@@ -127,8 +127,8 @@ var Player = function() {
             }
             return;
         } else if (self.state === PlayerState.Dying) {
-            self.location = addVectors(self.location, scaleVector(self.velocity, elapsed));
-            self.velocity = scaleVector(self.velocity, 0.3);
+            self.location.addScaled(self.velocity, elapsed);
+            self.velocity.scale(0.3);
             self.sinceDied += elapsed;
             if (self.sinceDied > self.explosion.length * kExplosionFrameMilliseconds) {
                 self.state = PlayerState.Dead;
@@ -137,7 +137,7 @@ var Player = function() {
         }
         var direction = getDirection(self.angle);
 
-        self.location = addVectors(self.location, scaleVector(self.velocity, elapsed));
+        self.location.addScaled(self.velocity, elapsed);
 
         self.thrusting = false;
         self.leftRetro = false;
@@ -159,12 +159,12 @@ var Player = function() {
 
         for (var i = 0; i < planets.length; ++i) {
             var planet = planets[i];
-            var force = planet.determineForce(self.location, kMaxPlanetDistanceSq);
-            if (force) {
-                if (force === "crash") {
+            var accel = planet.determineAcceleration(self.location, kMaxPlanetDistanceSq, elapsed);
+            if (accel) {
+                if (accel === "crash") {
                     self.crash(debris);
                 } else {
-                    self.velocity = addVectors(self.velocity, scaleVector(force, elapsed));
+                    self.velocity.add(accel);
                 }
             }
         }
@@ -181,7 +181,7 @@ var Player = function() {
         for (i = 0; i < gates.length; ++i) {
             var g = gates[i];
             g.checkPassed(before, self.location);
-            g.checkPassed(self.location, self.location + (getDirection(self.angle) * self.sprite.Width / 2.0));
+            g.checkPassed(self.location, addVectors(self.location, scaleVector(getDirection(self.angle), self.sprite.width * 0.5)));
             last = g;
         }
 
@@ -191,25 +191,26 @@ var Player = function() {
         }
 
         if ((thrust & Thrusters.Accelerate) == Thrusters.Accelerate) {
-            self.velocity.add(scaleVector(direction, kMaxAcceleration * elapsed));
+            self.velocity.addScaled(direction, kMaxAcceleration * elapsed);
             self.thrusting = true;
         } else if ((thrust & Thrusters.Break) == Thrusters.Break) {
-            var mag = self._speedSquared();
-            if (mag > 0) {
+            var speedSq = self.velocity.lengthSq();
+            if (speedSq > 0) {
                 self.rightRetro = true;
                 self.leftRetro = true;
                 self.rightRearRetro = true;
                 self.leftRearRetro = true;
 
-                if (mag < (kMaxBreak * kMaxBreak * elapsed * elapsed)) {
+                if (speedSq < (kMaxBreak * kMaxBreak * elapsed * elapsed)) {
                     self.velocity.set(0, 0);
                 } else {
-                    self.velocity.add(scaleVector(vectorNormalize(self.velocity), -kMaxBreak * elapsed));
+                    self.velocity.addScaled(self.velocity, -kMaxBreak * elapsed / Math.sqrt(speedSq));
                 }
             }
         }
-        if (self._speedSquared() > kMaxSpeed * kMaxSpeed) {
-            self.velocity = scaleVector(vectorNormalize(self.velocity), kMaxSpeed);
+        if (self.velocity.lengthSq() > kMaxSpeed * kMaxSpeed) {
+            self.velocity.normalize();
+            self.velocity.scale(kMaxSpeed);
         }
     }
 
@@ -231,10 +232,6 @@ var Player = function() {
             chunk.setSpin(Math.PI * 0.03);
             debris.push(chunk);
         }
-    }
-
-    this._speedSquared = function() {
-        return self.velocity.x * self.velocity.x + self.velocity.y * self.velocity.y;
     }
 
     this.draw = function(context, offset) {

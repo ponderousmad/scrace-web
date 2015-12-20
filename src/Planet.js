@@ -78,7 +78,7 @@ Planet.prototype.draw = function(context, offset) {
     context.drawImage(this.image, drawLocation.x, drawLocation.y);
 }
 
-Planet.prototype.determineForce = function(location, maxDistSq) {    
+Planet.prototype.determineAcceleration = function(location, maxDistSq, elapsed) {    
     var fromPlanet = subVectors(this.location, location);
     var distanceSq = fromPlanet.lengthSq();
     if (distanceSq > maxDistSq)
@@ -90,6 +90,6 @@ Planet.prototype.determineForce = function(location, maxDistSq) {
         return "crash";
     }
     var force = this.gravity / distanceSq;
-    fromPlanet.scale(force / distance);
+    fromPlanet.scale(elapsed * force / distance);
     return fromPlanet;
 }

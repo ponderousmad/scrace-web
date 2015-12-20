@@ -124,13 +124,12 @@ Debris.prototype.update = function(elapsed, planets) {
     for (var i = 0; i < planets.length; ++i)
     {
         var p = planets[i];
-        var force = p.determineForce(this.location, this.kMaxPlanetDistanceSq)
-        if (force) {
-            if (force === "crash") {
+        var accel = p.determineAcceleration(this.location, this.kMaxPlanetDistanceSq, elapsed)
+        if (accel) {
+            if (accel === "crash") {
                 this.destroyed = true;
             } else {
-                force.scale(elapsed);
-                this.velocity.add(force);
+                this.velocity.add(accel);
             }
         }
     }
