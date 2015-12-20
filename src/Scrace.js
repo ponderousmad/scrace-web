@@ -824,8 +824,8 @@ var Scrace = function() {
             self.context.fillStyle = "rgb(0,255,0)";
             self.context.fillText("Race Time: " + self.formatTime(time), 20,20);
         } else if(!self.allowEdits) {
+            self.context.drawImage(self.introOverlay, center - self.introOverlay.width *.5, 80);
             /*
-            mSpriteBatch.Draw(mIntroOverlay, center + new Vector2(-mIntroOverlay.Width / 2.0f, 20), Color.White);
             if (mRaceTime > 0 && gameTime.TotalGameTime.Seconds % 2 == 0)
             {
                 Color color = mPlayer.State == PlayerState.Finished ? Color.LimeGreen : Color.Red;
