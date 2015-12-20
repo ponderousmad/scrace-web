@@ -39,106 +39,103 @@ var Debris = function(type, location, velocity) {
     this.type = type;
     this.destroyed = false;
     this.image = debrisImages[type];
-    
-    var self = this;
+}
 
-    this.setStartVelocity = function(velocity)
+Debris.prototype.setStartVelocity = function(velocity)
+{
+    this.startVelocity = velocity;
+    this.velocity = velocity;
+}
+
+Debris.prototype.reset = function()
+{
+    this.location = this.startLocation;
+    this.velocity = this.startVelocity || new Vector(0, 0);
+    this.destroyed = false;
+}
+
+Debris.prototype.store = function() {
+    if (this.isPlayerDebris())
     {
-        self.startVelocity = velocity;
-        self.velocity = velocity;
+        // Don't store exploding player.
+        return;
     }
-
-    this.reset = function()
+    /*
+    using (IDataWriter element = doc["Debris"])
     {
-        self.location = self.startLocation;
-        self.velocity = self.startVelocity || new Vector(0, 0);
-        self.destroyed = false;
-    }
-
-    this.store = function() {
-        if (self.isPlayerDebris())
+        element.Attribute("type", mType.ToString());
+        DocumentWriter.WriteVector(element, mStartLocation);
+        if (mStartVelocity != null)
         {
-            // Don't store exploding player.
-            return;
-        }
-        /*
-        using (IDataWriter element = doc["Debris"])
-        {
-            element.Attribute("type", mType.ToString());
-            DocumentWriter.WriteVector(element, mStartLocation);
-            if (mStartVelocity != null)
+            using (IDataWriter velocity = element["Velocity"])
             {
-                using (IDataWriter velocity = element["Velocity"])
-                {
-                    DocumentWriter.WriteVector(velocity, mStartVelocity.Value);
-                }
-            }
-        }
-        */
-    }
-
-    this.isPlayerDebris = function() {
-        return self.type === DebrisType.PlayerCockpit || self.type === DebrisType.PlayerLeft || self.type === DebrisType.PlayerRight;
-    }
-
-    this.size = function() {
-        return self.image.width * 0.5;
-    }
-
-    this.setLocation = function(vector) {
-        self.location = vector;
-        self.startLocation = vector;
-    }
-
-    this.contains = function(point)
-    {
-        return vectorLength(subVectors(self.location, point)) < self.size() * 1.25;
-    }
-
-    this.setDebrisType = function(type) {
-        self.type = type;
-        self.image = debrisImages[type];
-    }
-
-    this.draw = function(context, offset) {
-        if (self.destroyed) {
-            return;
-        }
-        var xLoc = self.location.x + offset.x;
-        var yLoc = self.location.y + offset.y;
-        var halfSize = self.size();
-        
-        context.save();        
-        context.translate(xLoc, yLoc);
-        context.rotate(self.angle);
-        context.drawImage(self.image, -halfSize, -halfSize, self.image.width, self.image.height);        
-        context.restore();
-    }
-
-    this.update = function(elapsed, planets) {
-        if (self.destroyed)
-        {
-            return;
-        }
-        self.location = addVectors(self.location, self.velocity);
-        self.angle = clampAngle(self.angle + self.spin);
-
-        for (var i = 0; i < planets.length; ++i)
-        {
-            var p = planets[i];
-            var force = p.determineForce(self.location, self.kMaxPlanetDistanceSq)
-            if (force) {
-                if (force === "crash") {
-                    self.destroyed = true;
-                } else {
-                    self.velocity = addVectors(self.velocity, scaleVector(force, elapsed));
-                }
+                DocumentWriter.WriteVector(velocity, mStartVelocity.Value);
             }
         }
     }
+    */
+}
 
-    this.setSpin = function(spin)
-    {
-        self.spin = spin;
+Debris.prototype.isPlayerDebris = function() {
+    return this.type === DebrisType.PlayerCockpit || this.type === DebrisType.PlayerLeft || this.type === DebrisType.PlayerRight;
+}
+
+Debris.prototype.size = function() {
+    return this.image.width * 0.5;
+}
+
+Debris.prototype.setLocation = function(vector) {
+    this.location = vector;
+    this.startLocation = vector;
+}
+
+Debris.prototype.contains = function(point) {
+    return vectorLength(subVectors(this.location, point)) < this.size() * 1.25;
+}
+
+Debris.prototype.setDebrisType = function(type) {
+    this.type = type;
+    this.image = debrisImages[type];
+}
+
+Debris.prototype.draw = function(context, offset) {
+    if (this.destroyed) {
+        return;
     }
+    var xLoc = this.location.x + offset.x;
+    var yLoc = this.location.y + offset.y;
+    var halfSize = this.size();
+    
+    context.save();        
+    context.translate(xLoc, yLoc);
+    context.rotate(this.angle);
+    context.drawImage(this.image, -halfSize, -halfSize, this.image.width, this.image.height);        
+    context.restore();
+}
+
+Debris.prototype.update = function(elapsed, planets) {
+    if (this.destroyed)
+    {
+        return;
+    }
+    this.location = addVectors(this.location, this.velocity);
+    this.angle = clampAngle(this.angle + this.spin);
+
+    for (var i = 0; i < planets.length; ++i)
+    {
+        var p = planets[i];
+        var force = p.determineForce(this.location, this.kMaxPlanetDistanceSq)
+        if (force) {
+            if (force === "crash") {
+                this.destroyed = true;
+            } else {
+                this.velocity = addVectors(this.velocity, scaleVector(force, elapsed));
+            }
+        }
+    }
+}
+
+Debris.prototype.setSpin = function(spin)
+{
+    this.spin = spin;
 }
