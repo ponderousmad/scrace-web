@@ -1,4 +1,4 @@
-﻿
+
 var DebrisType = {
     SmallAsteroid : 0,
     LargeAsteroid : 1,
@@ -118,7 +118,7 @@ Debris.prototype.update = function(elapsed, planets) {
     {
         return;
     }
-    this.location.add(this.velocity);
+    this.location.addScaled(this.velocity, elapsed);
     this.angle = clampAngle(this.angle + this.spin);
 
     for (var i = 0; i < planets.length; ++i)
