@@ -15,7 +15,7 @@ var DebrisNames = {
     "PlayerRight" : DebrisType.PlayerRight
 };
 
-var debrisBatch = new ImageBatch("/scrace/images/");
+var debrisBatch = new ImageBatch("images/");
 var debrisImages = [
     debrisBatch.load("asteroids/SmallAsteroid.png"),
     debrisBatch.load("asteroids/LargeAsteroid.png"),

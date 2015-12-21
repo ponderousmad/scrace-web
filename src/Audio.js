@@ -15,6 +15,8 @@ var SoundEffect = function(resource) {
     
     var self = this;
     
+    resource = rootURL + resource;
+    
     if (gAudioContext != null) {
         var request = new XMLHttpRequest();
         request.open("GET", resource, true);

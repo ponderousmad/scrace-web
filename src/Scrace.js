@@ -640,7 +640,7 @@ var Scrace = function() {
     var kLightLength = 1000;
     var kTotalStartDelay = kWarmupDelay + 2 * kLightLength;
     
-    var uiBatch = new ImageBatch("/scrace/images/ui/");
+    var uiBatch = new ImageBatch("images/ui/");
     
     this.starterAmberOff = uiBatch.load("AmberLightOff.png");
     this.starterAmberOn =  uiBatch.load("AmberLightOn.png");
@@ -650,8 +650,8 @@ var Scrace = function() {
     
     uiBatch.commit();
 
-    this.starterDong = new SoundEffect("/scrace/audio/Dong.wav");
-    this.starterDing = new SoundEffect("/scrace/audio/Ding.wav");
+    this.starterDong = new SoundEffect("audio/Dong.wav");
+    this.starterDing = new SoundEffect("audio/Ding.wav");
     
     this.starfield = new Starfield(5000, 5000, 0.001, 0.95, true);
     this.planets = [];
@@ -717,7 +717,7 @@ var Scrace = function() {
     }
     
     this.loadCurrentLevel = function() {
-        self.loadLevel("/scrace/tracks/level" + self.level + ".json");
+        self.loadLevel("tracks/level" + self.level + ".json");
     }
     
     this.resetLevel = function() {

@@ -1,5 +1,7 @@
 "use strict";
 
+var rootURL = "/scrace/"
+
 function ImageBatch(basePath, onComplete) {
     this._toLoad = 0;
     this._commited = false;
@@ -34,8 +36,10 @@ function ImageBatch(basePath, onComplete) {
             self._toLoad -= 1;
             self._checkComplete();
         }
+        
+        var path = rootURL + (self._basePath || "") + resource;
 
-        image.src = (self._basePath || "") + resource;
+        image.src = path;
         return image;
     }
     

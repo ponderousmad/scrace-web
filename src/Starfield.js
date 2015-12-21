@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
@@ -103,7 +103,7 @@ function Starfield(width, height, density, maxDepth, infrequentAreFar) {
         }
     }
     
-    var batch = new ImageBatch("/scrace/images/starfield/", self.populate);
+    var batch = new ImageBatch("images/starfield/", self.populate);
     for (var imageName in self.frequency) {
         self.addImage(batch, imageName, self.frequency[imageName]);
     }

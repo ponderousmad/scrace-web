@@ -1,4 +1,4 @@
-﻿"use strict"
+"use strict"
 
 var PlanetType = {
     Ringed : 0,
@@ -18,7 +18,7 @@ var PlanetNames = {
     "PurpleGiant" : PlanetType.PurpleGiant
 };
 
-var planetsBatch = new ImageBatch("/scrace/images/planets/");
+var planetsBatch = new ImageBatch("images/planets/");
 var planetImages = [
     planetsBatch.load("RingedPlanet.png"),
     planetsBatch.load("SmallPlanetoid.png"),

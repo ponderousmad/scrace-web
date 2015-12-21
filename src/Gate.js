@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 var GateState = {
     Normal : 0,
@@ -6,14 +6,14 @@ var GateState = {
     Finish : 2
 }
 
-var gatesBatch = new ImageBatch("/scrace/images/gates/");
+var gatesBatch = new ImageBatch("images/gates/");
 var gateImages = [
     gatesBatch.load("Gate.png"),
     gatesBatch.load("GatePassed.png"),
     gatesBatch.load("Finish.png")
 ]
 gatesBatch.commit();
-var passGateSound = new SoundEffect("/scrace/audio/Pass.wav");
+var passGateSound = new SoundEffect("audio/Pass.wav");
 
 function calcEndPosition(location, angle, side) {
     return addVectors(location, scaleVector(angleToVector(angle + (Math.PI * 0.5 * side)), gateImages[0].height * 0.5));

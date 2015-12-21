@@ -81,7 +81,7 @@ var Player = function() {
     var self = this;
 
     this._loadContent = function() {
-        var batch = new ImageBatch("/scrace/images/ship/", function(){ self._loaded = true; });
+        var batch = new ImageBatch("images/ship/", function(){ self._loaded = true; });
         self.sprite = batch.load("Player.png");
         self.thrust = batch.load("Thrust.png");
         self.leftThruster = batch.load("RetroLeft.png");
@@ -89,7 +89,7 @@ var Player = function() {
         self.leftRearThruster = batch.load("RetroRearLeft.png");
         self.rightRearThruster = batch.load("RetroRearRight.png");
 
-        batch.setPath("/scrace/images/explode/");
+        batch.setPath("images/explode/");
         self.explosion = [
             batch.load("Explode01.png"),
             batch.load("Explode02.png"),
@@ -103,7 +103,7 @@ var Player = function() {
         ];
         batch.commit();
 
-        self.explodeSound = new SoundEffect("/scrace/audio/Splat.wav");
+        self.explodeSound = new SoundEffect("audio/Splat.wav");
     }
 
     this.reset = function(location) {
