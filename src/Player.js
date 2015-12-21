@@ -64,7 +64,7 @@ var Player = function() {
     this.rightRetro = false;
     this.leftRearRetro = false;
     this.rightRearRetro = false;
-    this.state = PlayerState.Alive;
+    this.state = PlayerState.Dead;
     this.sinceDied = 0.0;
     this.bits = null;
 
@@ -135,6 +135,9 @@ var Player = function() {
             }
             return;
         }
+        if (elapsed == 0) {
+            return;
+        }
         var direction = getDirection(self.angle);
 
         self.location.addScaled(self.velocity, elapsed);
@@ -185,7 +188,7 @@ var Player = function() {
             last = g;
         }
 
-        if(last && last.hasPassed) {
+        if(last && last.passed) {
             self.state = PlayerState.Finished;
             return;
         }

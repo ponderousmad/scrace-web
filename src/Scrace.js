@@ -26,39 +26,7 @@ namespace RGG2010
 
         private const int kLevels = 5;
 
-        private float? mStarter = null;
         private float mRaceTime = 0;
-
-        class Stats
-        {
-            public readonly float Time;
-            public readonly int GatesMissed;
-
-            public Stats(float time, int missed)
-            {
-                Time = time;
-                GatesMissed = missed;
-            }
-
-            const float kGatePenalty = 1000;
-
-            public float Rating
-            {
-                get { return Time + GatesMissed * kGatePenalty; }
-            }
-
-            internal string Formatted()
-            {
-                TimeSpan raceTime = TimeSpan.FromMilliseconds(Time);
-                TimeSpan rating = TimeSpan.FromMilliseconds(Rating);
-
-                return string.Format("{0:00}:{1:00}:{2:000} + {3} Gates Missed: {4:00}:{5:00}:{6:000}",
-                    raceTime.Minutes, raceTime.Seconds, raceTime.Milliseconds,
-                    GatesMissed,
-                    rating.Minutes, rating.Seconds, rating.Milliseconds
-                );
-            }
-        }
 
         Dictionary<int,List<Stats>> mStats = new Dictionary<int,List<Stats>>();
 
@@ -632,6 +600,41 @@ if (window.performance.now) {
     }
 }
 
+var kGatePenalty = 1000;
+
+function formatTime(totalMilliseconds) {
+    var showTime = Math.abs(totalMilliseconds);
+    var minutes = Math.floor(showTime / 60000.0);
+    if (minutes < 10) {
+        minutes = "0" + minutes;
+    }
+    showTime -= minutes * 60000;
+    var seconds = Math.floor(showTime / 1000);
+    if (seconds < 10) {
+        seconds = "0" + seconds;
+    }
+    var milliseconds = Math.floor(showTime - (seconds * 1000))
+    if (milliseconds < 100) {
+        if (milliseconds < 10) {
+            milliseconds = "00" + milliseconds;
+        } else {
+            milliseconds = "0" + milliseconds;
+        }
+    }
+    return (totalMilliseconds < 0 ? "-" : " ") + minutes + ":" + seconds + "." + milliseconds
+}
+
+function formatRaceStats(time, gatesMissed) {
+    var rating = time + gatesMissed * kGatePenalty
+    if(gatesMissed < 10) {
+        gatesMissed = " " + gatesMissed;
+    }
+    return {
+        score: rating,
+        display: formatTime(time) + " + " + gatesMissed + " Gates Missed =" + formatTime(rating)
+    }
+}
+
 var Scrace = function() {
     var kWarmupDelay = 1000;
     var kLightLength = 1000;
@@ -655,17 +658,23 @@ var Scrace = function() {
     this.debris = [];
     this.gates = [];
     this.player = new Player();
+    this.level = 1;
     
+    this.paused = true;
     this.resetting = false;
     this.lastTime = getTimestamp();
     
     this.starter = null;
     this.allowEdits = false;
     
+    this.highscores = {};
+    this.raceTime = null;
+    
     this.canvas = document.getElementById("canvas");
     this.context = canvas.getContext("2d");
+    this.context.font = "15px monospace"
     this.keyboardState = new KeyboardState(window);
-    
+   
     var self = this;
 
     this.loadLevel = function(resource) {
@@ -707,6 +716,10 @@ var Scrace = function() {
         request.send();
     }
     
+    this.loadCurrentLevel = function() {
+        self.loadLevel("/scrace/tracks/level" + self.level + ".json");
+    }
+    
     this.resetLevel = function() {
         var filteredDebris = []
         for (var i = self.debris.length - 1; i >= 0; --i) {
@@ -723,10 +736,14 @@ var Scrace = function() {
     }
     
     this.setupStart = function() {
-        self.player.reset(new Vector(0,0));
-        self.lastTime = getTimestamp();
-        self.starter = 0;
-        self.paused = true;
+        if (self.resetting) {
+            self.player.reset(new Vector(0,0));
+            self.lastTime = getTimestamp();
+            self.starter = 0;
+            self.raceTime = null;
+            self.paused = true;
+            self.resetting = false;
+        }
     }
     
     this.raceStarted = function() {
@@ -734,10 +751,13 @@ var Scrace = function() {
     }
    
     this.update = function() {
+        var i = 0;
         var now = getTimestamp();
         var delta = now - self.lastTime;
-        for (var i = 0; i < self.debris.length; ++i) {
-            self.debris[i].update(delta, self.planets);
+        if (!self.paused) {
+            for (i = 0; i < self.debris.length; ++i) {
+                self.debris[i].update(delta, self.planets);
+            }
         }
         var player = self.player;
 
@@ -758,55 +778,69 @@ var Scrace = function() {
             self.starter += delta;
         }
         
-        if (!self.paused) {
-            player.update(delta, self.planets, self.debris, self.gates, self.keyboardState);
-        }
+        player.update(self.paused ? 0 : delta, self.planets, self.debris, self.gates, self.keyboardState);
         
         if (player.state == PlayerState.Reset || player.state == PlayerState.Dead || player.state == PlayerState.Finished) {
+            if (self.raceTime == null && self.starter != null) {
+                var missCount = 0;
+                for (i = 0; i < self.gates.length; ++i) {
+                    if (!self.gates[i].passed) {
+                        ++missCount;
+                    }
+                }
+                self.raceTime = formatRaceStats(self.starter, missCount);
+                if (player.state == PlayerState.Finished) {
+                    self.checkHighscore(self.raceTime);
+                }
+            }
             self.starter = null;
             if (!self.resetting) {              
                 for (var k = "1".charCodeAt(); k <= "5".charCodeAt(); ++k) {
                     if (self.keyboardState.isKeyDown(k)) {
                         self.resetting = true;
-                        self.loadLevel("/scrace/tracks/level" + String.fromCharCode(k) + ".json");
+                        self.level = String.fromCharCode(k);
+                        self.loadCurrentLevel();
                     }
                 }
                 
                 if(!self.resetting && player.state == PlayerState.Reset) {
+                    self.resetting = true;
                     self.resetLevel();
                 }
             }
-        } else if(self.resetting) {
-            self.resetting = false;
         }
         
         self.lastTime = now;
     }
     
-    this.formatTime = function(totalMilliseconds) {
-        var showTime = Math.abs(totalMilliseconds);
-        var minutes = Math.floor(showTime / 60000.0);
-        if (minutes < 10) {
-            minutes = "0" + minutes;
-        }
-        showTime -= minutes * 60000;
-        var seconds = Math.floor(showTime / 1000);
-        if (seconds < 10) {
-            seconds = "0" + seconds;
-        }
-        var milliseconds = Math.floor(showTime - (seconds * 1000))
-        if (milliseconds < 100) {
-            if (milliseconds < 10) {
-                milliseconds = "00" + milliseconds;
-            } else {
-                milliseconds = "0" + milliseconds;
+    this.checkHighscore = function(raceStats) {
+        var kMaxStats = 5;
+        if (!self.highscores[self.level]) {
+            self.highscores[self.level] = [raceStats];
+        } else {
+            var levelScores = self.highscores[self.level];
+            
+            for (var i = 0; i < levelScores.length; ++i) {
+                if (raceStats.score < levelScores[i].score) {
+                    levelScores.splice(i, 0, raceStats);
+                    raceStats = null;
+                    break;
+                }
+            }
+            
+            if(raceStats != null) {
+                levelScores.push(raceStats);
+            }
+            
+            if (levelScores.length > kMaxStats) {
+                levelScores.pop();
             }
         }
-        return (totalMilliseconds < 0 ? "-" : " ") + minutes + ":" + seconds + ":" + milliseconds
     }
-    
+   
     this.drawHud = function() {
-        var center = canvas.width * .5;
+        var center = self.canvas.width * .5;
+        var hudOffset = 20;
 
         if (self.starter != null) {
             var lightOneOn = self.starter > kWarmupDelay;
@@ -822,30 +856,34 @@ var Scrace = function() {
             var time = self.starter - kTotalStartDelay;
 
             self.context.fillStyle = "rgb(0,255,0)";
-            self.context.fillText("Race Time: " + self.formatTime(time), 20,20);
+            self.context.textAlign = "start";
+            self.context.fillText("Race Time: " + formatTime(time), hudOffset, hudOffset);
         } else if(!self.allowEdits) {
             self.context.drawImage(self.introOverlay, center - self.introOverlay.width *.5, 80);
-            /*
-            if (mRaceTime > 0 && gameTime.TotalGameTime.Seconds % 2 == 0)
-            {
-                Color color = mPlayer.State == PlayerState.Finished ? Color.LimeGreen : Color.Red;
-                TimeSpan raceTime = TimeSpan.FromMilliseconds(mRaceTime);
-                mSpriteBatch.DrawString(mHudFont, string.Format("Race Time: {0:00}:{1:00}:{2:000} + {3} Gates Missed", raceTime.Minutes, raceTime.Seconds, raceTime.Milliseconds, mGates.Where(x => !x.HasPassed).Count()), hudLocation, color);
-            }
 
-            if (mStats[mLevel].Count > 0)
-            {
-                Vector2 statsLocation = center - new Vector2(160, 200);
-
-                string line = "          Best Times";
-                DrawStat(mStatsHeaderFont, line, ref statsLocation);
-
-                foreach (string timeLine in mStats[mLevel].OrderBy(x => x.Rating).Take(5).Select(x => x.Formatted()))
+            if(!self.resetting) {
+                if (self.raceTime != null && (new Date().getSeconds()) % 2 == 0)
                 {
-                    DrawStat(mHudFont, timeLine, ref statsLocation);
+                    self.context.fillStyle = self.player.state == PlayerState.Finished ? "rgb(0,255,0)" : "rgb(255,0,0)";
+                    self.context.textAlign = "start";
+                    self.context.fillText("Race Time: " + self.raceTime.display, hudOffset, hudOffset);
+                }
+                var levelStats = self.highscores[self.level];
+                if (levelStats)
+                {
+                    self.context.fillStyle = "rgb(0,255,255)";
+                    self.context.textAlign = "center";
+                    
+                    var offset = 350;
+                    self.context.fillText("Best Times", center, offset);
+
+                    for (var i = 0; i < levelStats.length; ++i)
+                    {
+                        offset += 25;
+                        self.context.fillText(levelStats[i].display, center, offset);
+                    }
                 }
             }
-            */
         }
     }
     
@@ -870,8 +908,8 @@ var Scrace = function() {
 
 window.onload = function(e) {
     console.log("window.onload", e, Date.now())    
-    var scrace = new Scrace(); 
-    scrace.loadLevel("/scrace/tracks/level1.json");
+    var scrace = new Scrace();
+    scrace.loadCurrentLevel();
     window.setInterval(scrace.update, 16);
     scrace.draw();
 };
