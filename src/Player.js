@@ -21,7 +21,8 @@ var Keys = {
     Down : 40,
     Left : 37,
     Right : 39,
-    Reset : 32
+    Reset : 32,
+    Abort : 27
 }
 
 function getDirection(angle) {
@@ -191,6 +192,10 @@ var Player = function() {
         if(last && last.passed) {
             self.state = PlayerState.Finished;
             return;
+        }
+        
+        if(keyboardState.isKeyDown(Keys.Abort)) {
+            self.crash();
         }
 
         if ((thrust & Thrusters.Accelerate) == Thrusters.Accelerate) {
