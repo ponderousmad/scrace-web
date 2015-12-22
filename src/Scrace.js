@@ -589,14 +589,14 @@ namespace RGG2010
 var getTimestamp = null;
 if (window.performance.now) {
     console.log("Using high performance timer");
-    getTimestamp = function() { return window.performance.now(); };
+    getTimestamp = function () { return window.performance.now(); };
 } else {
     if (window.performance.webkitNow) {
         console.log("Using webkit high performance timer");
-        getTimestamp = function() { return window.performance.webkitNow(); };
+        getTimestamp = function () { return window.performance.webkitNow(); };
     } else {
         console.log("Using low performance timer");
-        getTimestamp = function() { return new Date().getTime(); };
+        getTimestamp = function () { return new Date().getTime(); };
     }
 }
 
@@ -613,7 +613,7 @@ function formatTime(totalMilliseconds) {
     if (seconds < 10) {
         seconds = "0" + seconds;
     }
-    var milliseconds = Math.floor(showTime - (seconds * 1000))
+    var milliseconds = Math.floor(showTime - (seconds * 1000));
     if (milliseconds < 100) {
         if (milliseconds < 10) {
             milliseconds = "00" + milliseconds;
@@ -621,26 +621,25 @@ function formatTime(totalMilliseconds) {
             milliseconds = "0" + milliseconds;
         }
     }
-    return (totalMilliseconds < 0 ? "-" : " ") + minutes + ":" + seconds + "." + milliseconds
+    return (totalMilliseconds < 0 ? "-" : " ") + minutes + ":" + seconds + "." + milliseconds;
 }
 
 function formatRaceStats(time, gatesMissed) {
-    var rating = time + gatesMissed * kGatePenalty
-    if(gatesMissed < 10) {
+    var rating = time + gatesMissed * kGatePenalty;
+    if (gatesMissed < 10) {
         gatesMissed = " " + gatesMissed;
     }
     return {
         score: rating,
         display: formatTime(time) + " + " + gatesMissed + " Gates Missed =" + formatTime(rating)
-    }
+    };
 }
 
-var Scrace = function() {
-    var kWarmupDelay = 1000;
-    var kLightLength = 1000;
-    var kTotalStartDelay = kWarmupDelay + 2 * kLightLength;
-    
-    var uiBatch = new ImageBatch("images/ui/");
+var Scrace = function () {
+    var kWarmupDelay = 1000,
+        kLightLength = 1000,
+        kTotalStartDelay = kWarmupDelay + 2 * kLightLength,
+        uiBatch = new ImageBatch("images/ui/");
     
     this.starterAmberOff = uiBatch.load("AmberLightOff.png");
     this.starterAmberOn =  uiBatch.load("AmberLightOn.png");
