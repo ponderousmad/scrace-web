@@ -603,8 +603,8 @@ if (window.performance.now) {
 var kGatePenalty = 1000;
 
 function formatTime(totalMilliseconds) {
-    var showTime = Math.abs(totalMilliseconds);
-    var minutes = Math.floor(showTime / 60000.0);
+    var showTime = Math.abs(totalMilliseconds),
+        minutes = Math.floor(showTime / 60000.0);
     if (minutes < 10) {
         minutes = "0" + minutes;
     }
@@ -670,17 +670,17 @@ var Scrace = function () {
     this.raceTime = null;
     
     this.canvas = document.getElementById("canvas");
-    this.context = canvas.getContext("2d");
-    this.context.font = "15px monospace"
+    this.context = this.canvas.getContext("2d");
+    this.context.font = "15px monospace";
     this.keyboardState = new KeyboardState(window);
    
     var self = this;
 
-    this.loadLevel = function(resource) {
+    this.loadLevel = function (resource) {
         var request = new XMLHttpRequest();
         request.open("GET", resource, true);
         request.responseType = "json";
-        request.onload = function() {
+        request.onload = function () {
             console.log("Loading " + resource);
             var planetData = request.response["Planets"];
             self.planets.length = 0;

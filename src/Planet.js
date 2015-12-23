@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 var PlanetType = {
     Ringed : 0,
@@ -29,7 +29,7 @@ var planetImages = [
 ];
 planetsBatch.commit();
 
-var Planet = function(type, location, gravity) {
+var Planet = function (type, location, gravity) {
     this.type = type;
     this.image = planetImages[type];
     this.location = location;
@@ -37,9 +37,9 @@ var Planet = function(type, location, gravity) {
 
     this._size = null;
     this._halfSize = null;
-}
+};
     
-Planet.prototype.store = function() {
+Planet.prototype.store = function () {
     /*
     using (IDataWriter element = doc["Planet"])
     {
@@ -48,48 +48,47 @@ Planet.prototype.store = function() {
         DocumentWriter.WriteVector(element, mLocation);
     }
     */
-}
+};
 
-Planet.prototype.size = function() {
-    if(this._size == null) {
+Planet.prototype.size = function () {
+    if (this._size === null) {
         if (!planetsBatch.loaded) {
             return 1;
-        } else if(this.type === PlanetType.Ringed) {
+        } else if (this.type === PlanetType.Ringed) {
             this._size = 30.0;
         } else {
             this._size = this.image.width / 2.0;
         }
     }
     return this._size;
-}
+};
 
-Planet.prototype.contains = function(point) {
+Planet.prototype.contains = function (point) {
     return pointDistance(this.location, point) < this.size();
-}
+};
 
-Planet.prototype.draw = function(context, offset) {
+Planet.prototype.draw = function (context, offset) {
     if (!planetsBatch.loaded) {
         return;
-    } else if(this.halfSize == null) {
+    } else if (this.halfSize == null) {
         this.halfSize = new Vector(this.image.width * 0.5, this.image.height * 0.5);
     }
     var drawLocation = addVectors(this.location, offset);
     drawLocation.sub(this.halfSize);
     context.drawImage(this.image, drawLocation.x, drawLocation.y);
-}
+};
 
-Planet.prototype.determineAcceleration = function(location, maxDistSq, elapsed) {    
+Planet.prototype.determineAcceleration = function (location, maxDistSq, elapsed) {
     var fromPlanet = subVectors(this.location, location);
     var distanceSq = fromPlanet.lengthSq();
-    if (distanceSq > maxDistSq)
-    {
+    if (distanceSq > maxDistSq) {
         return null;
     }
-    var distance = Math.sqrt(distanceSq)
+    var distance = Math.sqrt(distanceSq);
     if (distance < this.size()) {
         return "crash";
     }
     var force = this.gravity / distanceSq;
     fromPlanet.scale(elapsed * force / distance);
     return fromPlanet;
-}
+};

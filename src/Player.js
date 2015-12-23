@@ -6,7 +6,7 @@ var Thrusters = {
     RotateRight : 2,
     Accelerate : 4,
     Break : 8
-}
+};
 
 var PlayerState = {
     Alive : 0,
@@ -14,7 +14,7 @@ var PlayerState = {
     Dead : 2,
     Reset : 3,
     Finished : 4
-}
+};
 
 var Keys = {
     Up : 38,
@@ -23,7 +23,7 @@ var Keys = {
     Right : 39,
     Reset : 32,
     Abort : 27
-}
+};
 
 function getDirection(angle) {
     return new Vector(Math.cos(angle), Math.sin(angle));
@@ -46,7 +46,7 @@ function determineThrust(keyboardState) {
     return thrust;
 }
 
-var Player = function() {
+var Player = function () {
     this.sprite = null;
     this.thrust = null;
     this.leftThruster = null;
@@ -69,20 +69,20 @@ var Player = function() {
     this.sinceDied = 0.0;
     this.bits = null;
 
-    var kManouverPower = 0.005;
-    var kMaxAcceleration = 0.0006;
-    var kMaxBreak = 0.0005;
-    var kMaxSpeed = 0.5;
-    var kExplosionFrameMilliseconds = 80;
-    var kPlayerSize = 4;
+    var kManouverPower = 0.005,
+        kMaxAcceleration = 0.0006,
+        kMaxBreak = 0.0005,
+        kMaxSpeed = 0.5,
+        kExplosionFrameMilliseconds = 80,
+        kPlayerSize = 4,
 
-    var kMaxPlanetDistance = 500.0;
-    var kMaxPlanetDistanceSq = kMaxPlanetDistance * kMaxPlanetDistance;
+        kMaxPlanetDistance = 500.0,
+        kMaxPlanetDistanceSq = kMaxPlanetDistance * kMaxPlanetDistance;
     
     var self = this;
 
-    this._loadContent = function() {
-        var batch = new ImageBatch("images/ship/", function(){ self._loaded = true; });
+    this._loadContent = function () {
+        var batch = new ImageBatch("images/ship/", function () { self._loaded = true; });
         self.sprite = batch.load("Player.png");
         self.thrust = batch.load("Thrust.png");
         self.leftThruster = batch.load("RetroLeft.png");
@@ -105,9 +105,9 @@ var Player = function() {
         batch.commit();
 
         self.explodeSound = new SoundEffect("audio/Splat.wav");
-    }
+    };
 
-    this.reset = function(location) {
+    this.reset = function (location) {
         self.location = location;
         self.velocity = new Vector(0, 0);
         self.angle = -Math.PI / 2;
@@ -117,10 +117,11 @@ var Player = function() {
         self.leftRetro = false;
         self.leftRearRetro = false;
         self.state = PlayerState.Alive;
-    }
+    };
 
-    this.update = function(elapsed, planets, debris, gates, keyboardState) {
-        var before = self.location.clone();
+    this.update = function (elapsed, planets, debris, gates, keyboardState) {
+        var before = self.location.clone(),
+            i = 0;
         if (self.state === PlayerState.Dead || self.state === PlayerState.Finished) {
             if (keyboardState.isKeyDown(Keys.Reset)) {
                 console.log("Reset requested");
@@ -136,7 +137,7 @@ var Player = function() {
             }
             return;
         }
-        if (elapsed == 0) {
+        if (elapsed === 0) {
             return;
         }
         var direction = getDirection(self.angle);
@@ -153,15 +154,14 @@ var Player = function() {
             self.angle -= kManouverPower * elapsed;
             self.rightRetro = true;
             self.leftRearRetro = true;
-        }
-        else if ((thrust & Thrusters.RotateRight) === Thrusters.RotateRight) {
+        } else if ((thrust & Thrusters.RotateRight) === Thrusters.RotateRight) {
             self.angle += kManouverPower * elapsed;
             self.leftRetro = true;
             self.rightRearRetro = true;
         }
         self.angle = clampAngle(self.angle);
 
-        for (var i = 0; i < planets.length; ++i) {
+        for (i = 0; i < planets.length; ++i) {
             var planet = planets[i];
             var accel = planet.determineAcceleration(self.location, kMaxPlanetDistanceSq, elapsed);
             if (accel) {
@@ -189,19 +189,19 @@ var Player = function() {
             last = g;
         }
 
-        if(last && last.passed) {
+        if (last && last.passed) {
             self.state = PlayerState.Finished;
             return;
         }
         
-        if(keyboardState.isKeyDown(Keys.Abort)) {
+        if (keyboardState.isKeyDown(Keys.Abort)) {
             self.crash();
         }
 
-        if ((thrust & Thrusters.Accelerate) == Thrusters.Accelerate) {
+        if ((thrust & Thrusters.Accelerate) === Thrusters.Accelerate) {
             self.velocity.addScaled(direction, kMaxAcceleration * elapsed);
             self.thrusting = true;
-        } else if ((thrust & Thrusters.Break) == Thrusters.Break) {
+        } else if ((thrust & Thrusters.Break) === Thrusters.Break) {
             var speedSq = self.velocity.lengthSq();
             if (speedSq > 0) {
                 self.rightRetro = true;
@@ -220,10 +220,10 @@ var Player = function() {
             self.velocity.normalize();
             self.velocity.scale(kMaxSpeed);
         }
-    }
+    };
 
-    this.crash = function(debris) {
-        if (self.state != PlayerState.Dying) {
+    this.crash = function (debris) {
+        if (self.state !== PlayerState.Dying) {
             self.state = PlayerState.Dying;
             self.explodeSound.play();
             self.sinceDied = 0;
@@ -240,9 +240,9 @@ var Player = function() {
             chunk.setSpin(Math.PI * 0.03);
             debris.push(chunk);
         }
-    }
+    };
 
-    this.draw = function(context, offset) {
+    this.draw = function (context, offset) {
         if (!self._loaded) {
             return;
         }
@@ -259,17 +259,17 @@ var Player = function() {
                 size.x, size.y
             );
             return;
-        } else if (self.state != PlayerState.Alive && self.state != PlayerState.Finished) {
+        } else if (self.state !== PlayerState.Alive && self.state !== PlayerState.Finished) {
             return;
         }
-        var width = self.sprite.width;
-        var height = self.sprite.height;
-        var xSpriteOffset = width / 4.0;
-        var ySpriteOffset = height / 2.0;
-        var xLoc = self.location.x + offset.x;
-        var yLoc = self.location.y + offset.y;
+        var width = self.sprite.width,
+            height = self.sprite.height,
+            xSpriteOffset = width / 4.0,
+            ySpriteOffset = height / 2.0,
+            xLoc = self.location.x + offset.x,
+            yLoc = self.location.y + offset.y;
 
-        context.save();        
+        context.save();       
         context.translate(xLoc, yLoc);
         context.rotate(self.angle);
         context.translate(-xLoc - xSpriteOffset, -yLoc - ySpriteOffset);
@@ -292,7 +292,7 @@ var Player = function() {
         }
         context.drawImage(self.sprite, location.x, location.y, width, height);
         context.restore();
-    }
+    };
     
     this._loadContent();
 }
