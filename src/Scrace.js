@@ -9,8 +9,6 @@ namespace RGG2010
     public class Scrace : Microsoft.Xna.Framework.Game
     {
         private static readonly Vector2 kInitialScroll = new Vector2(400, 100);
-
-        private Starfield mStarfield = new Starfield();
         private Vector2 mScroll = kInitialScroll; 
 
         private bool mAllowEdits = false;
@@ -22,27 +20,8 @@ namespace RGG2010
         private bool mPausedDown = false;
         private bool mPaused = false;
 
-        private int mLevel = 0;
 
         private const int kLevels = 5;
-
-        private float mRaceTime = 0;
-
-        Dictionary<int,List<Stats>> mStats = new Dictionary<int,List<Stats>>();
-
-        /// <summary>
-        /// Allows the game to perform any initialization it needs to before starting to run.
-        /// This is where it can query for any required services and load any non-graphic
-        /// related content.  Calling base.Initialize will enumerate through any components
-        /// and initialize them as well.
-        /// </summary>
-        protected override void Initialize()
-        {
-            for (int i = 1; i <= kLevels; ++i)
-            {
-                mStats[i] = new List<Stats>();
-            }
-        }
 
         private void StoreLevel()
         {
@@ -660,6 +639,7 @@ var Scrace = function () {
     this.level = 1;
     
     this.paused = true;
+    this.pauseDown = false;
     this.resetting = false;
     this.lastTime = getTimestamp();
     
@@ -740,7 +720,7 @@ var Scrace = function () {
             self.lastTime = getTimestamp();
             self.starter = 0;
             self.raceTime = null;
-            self.paused = true;
+            self.paused = false;
             self.resetting = false;
         }
     }
@@ -753,14 +733,19 @@ var Scrace = function () {
         var i = 0;
         var now = getTimestamp();
         var delta = now - self.lastTime;
-        if (!self.paused) {
-            for (i = 0; i < self.debris.length; ++i) {
-                self.debris[i].update(delta, self.planets);
-            }
-        }
         var player = self.player;
+        
+        if(self.paused) {
+            delta = 0;
+        }
 
         if (self.starter != null) {
+            if (!self.paused) {
+                for (i = 0; i < self.debris.length; ++i) {
+                    self.debris[i].update(delta, self.planets);
+                }
+            }
+            
             if (self.starter < kWarmupDelay && self.starter + delta > kWarmupDelay)
             {
                 self.starterDong.play();
@@ -772,12 +757,13 @@ var Scrace = function () {
             else if ((!self.raceStarted()) && (self.starter + delta) > kTotalStartDelay)
             {
                 self.starterDing.play();
-                self.paused = false;
             }
             self.starter += delta;
         }
         
-        player.update(self.paused ? 0 : delta, self.planets, self.debris, self.gates, self.keyboardState);
+        player.update((self.paused || !self.raceStarted()) ? 0 : delta, self.planets, self.debris, self.gates, self.keyboardState);
+        
+        var pauseDown = self.keyboardState.isKeyDown("P".charCodeAt());
         
         if (player.state == PlayerState.Reset || player.state == PlayerState.Dead || player.state == PlayerState.Finished) {
             if (self.raceTime == null && self.starter != null) {
@@ -807,7 +793,14 @@ var Scrace = function () {
                     self.resetLevel();
                 }
             }
+        } else {
+            if (self.pauseDown != pauseDown && pauseDown && self.starter != null) {
+                self.paused = ! self.paused;
+                console.log("Toggled pause");
+            }
         }
+        
+        self.pauseDown = pauseDown;
         
         self.lastTime = now;
     }
