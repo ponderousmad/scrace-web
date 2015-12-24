@@ -195,7 +195,7 @@ var Player = function () {
         }
         
         if (keyboardState.isKeyDown(Keys.Abort)) {
-            self.crash();
+            self.crash(debris);
         }
 
         if ((thrust & Thrusters.Accelerate) === Thrusters.Accelerate) {
