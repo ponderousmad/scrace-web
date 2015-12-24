@@ -228,15 +228,16 @@ var Player = function () {
             self.explodeSound.play();
             self.sinceDied = 0;
             var chunk = new Debris(DebrisType.PlayerCockpit, self.location.clone());
-            chunk.setStartVelocity(addVectors(self.velocity, scaleVector(getDirection(self.angle), 0.02)));
+            var baseVelocity = scaleVector(self.velocity, 0.7);
+            chunk.setStartVelocity(addVectors(baseVelocity, scaleVector(getDirection(self.angle), 0.02)));
             chunk.setSpin(Math.PI * 0.01);
             debris.push(chunk);
             chunk = new Debris(DebrisType.PlayerLeft, self.location.clone());
-            chunk.setStartVelocity(addVectors(self.velocity, scaleVector(getDirection(self.angle + Math.PI * 0.5), 0.02)));
+            chunk.setStartVelocity(addVectors(baseVelocity, scaleVector(getDirection(self.angle + Math.PI * 0.5), 0.02)));
             chunk.setSpin(-Math.PI * 0.02);
             debris.push(chunk);
             chunk = new Debris(DebrisType.PlayerRight, self.location.clone());
-            chunk.setStartVelocity(addVectors(self.velocity, scaleVector(getDirection(self.angle - Math.PI * 0.5), 0.02)));
+            chunk.setStartVelocity(addVectors(baseVelocity, scaleVector(getDirection(self.angle - Math.PI * 0.5), 0.02)));
             chunk.setSpin(Math.PI * 0.03);
             debris.push(chunk);
         }
