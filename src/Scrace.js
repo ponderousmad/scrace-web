@@ -8,21 +8,11 @@ namespace RGG2010
     /// </summary>
     public class Scrace : Microsoft.Xna.Framework.Game
     {
-        private static readonly Vector2 kInitialScroll = new Vector2(400, 100);
-        private Vector2 mScroll = kInitialScroll; 
-
         private bool mAllowEdits = false;
         private Planet mEditPlanet = null;
         private Debris mEditDebris = null;
         private float mLastGateAngle = 0;
         private Gate mEditGate = null;
-
-        private bool mPausedDown = false;
-        private bool mPaused = false;
-
-
-        private const int kLevels = 5;
-
 
         /// <summary>
         /// Allows the game to run logic such as updating the world,
@@ -33,24 +23,6 @@ namespace RGG2010
         {
             if (mAllowEdits)
             {
-                const int kScrollStep = 5;
-                if (keyboard.IsKeyDown(Keys.Left))
-                {
-                    mScroll.X += kScrollStep;
-                }
-                else if (keyboard.IsKeyDown(Keys.Right))
-                {
-                    mScroll.X -= kScrollStep;
-                }
-                if (keyboard.IsKeyDown(Keys.Up))
-                {
-                    mScroll.Y += kScrollStep;
-                }
-                else if (keyboard.IsKeyDown(Keys.Down))
-                {
-                    mScroll.Y -= kScrollStep;
-                }
-
                 Edit(Mouse.GetState(), Keyboard.GetState());
             }
 
@@ -400,7 +372,6 @@ var Scrace = function () {
     this.gates = [];
     this.player = new Player();
     this.level = 1;
-    this.scroll = new Vector(0,0);
     
     this.paused = true;
     this.pauseDown = false;
@@ -417,6 +388,7 @@ var Scrace = function () {
     this.context = this.canvas.getContext("2d");
     this.context.font = "15px monospace";
     this.keyboardState = new KeyboardState(window);
+    this.scroll = new Vector(this.canvas.width * 0.5, this.canvas.height * 0.5);
    
     var self = this;
 
@@ -441,9 +413,6 @@ var Scrace = function () {
                 var d = debrisData[i];
                 var location = parseVector(d);
                 var velocity = d["Velocity"] ? parseVector(d["Velocity"]) : null;
-                if (velocity != null) {
-                    console.log("Got velocity: " + velocity.x + ", " + velocity.y);
-                }
                 var type = DebrisNames[d.type];
                 self.debris.push(new Debris(type, location, velocity));
             }
@@ -599,6 +568,26 @@ var Scrace = function () {
         
         self.pauseDown = pauseDown;
         
+        if (self.allowEdits || player.state === PlayerState.Dead) {
+            var kScrollStep = 1;
+            if (self.keyboardState.isKeyDown(Keys.Left)) {
+                self.scroll.x += kScrollStep * delta;
+            } else if (self.keyboardState.isKeyDown(Keys.Right)) {
+                self.scroll.x -= kScrollStep * delta;
+            }
+            
+            if (self.keyboardState.isKeyDown(Keys.Up)) {
+                self.scroll.y += kScrollStep * delta;
+            } else if (self.keyboardState.isKeyDown(Keys.Down)) {
+                self.scroll.y -= kScrollStep * delta;
+            }
+        } else {
+            self.scroll.set(
+                self.canvas.width * 0.5 - self.player.location.x,
+                self.canvas.height * 0.5 - self.player.location.y
+            );
+        }
+        
         self.lastTime = now;
     }
     
@@ -704,10 +693,6 @@ var Scrace = function () {
     
     this.draw = function() {
         requestAnimationFrame(self.draw);
-        self.scroll.set(
-            self.canvas.width * 0.5 - self.player.location.x,
-            self.canvas.height * 0.5 - self.player.location.y
-        );
         self.starfield.draw(self.context, self.scroll, self.canvas.width, self.canvas.height);
         for (var i = 0; i < self.planets.length; ++i) {
             self.planets[i].draw(self.context, self.scroll);
