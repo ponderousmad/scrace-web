@@ -35,7 +35,7 @@ var Debris = function (type, location, velocity) {
     this.spin = Math.random() * this.kMaxSpin;
     this.location = location;
     this.startLocation = location.clone();
-    this.velocity = velocity || new Vector(0, 0);
+    this.velocity = (velocity || new Vector(0, 0)).clone();
     this.startVelocity = velocity;
     this.type = type;
     this.destroyed = false;
@@ -44,7 +44,7 @@ var Debris = function (type, location, velocity) {
 
 Debris.prototype.setStartVelocity = function (velocity) {
     this.startVelocity = velocity;
-    this.velocity = velocity;
+    this.velocity = velocity.clone();
 };
 
 Debris.prototype.reset = function () {
