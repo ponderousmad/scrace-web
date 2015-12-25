@@ -31,77 +31,6 @@ namespace RGG2010
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            KeyboardState keyboard = Keyboard.GetState();
-
-            if(keyboard.IsKeyDown(Keys.Escape))
-            {
-                mStarter = null;
-            }
-
-            if (RaceStarted() && !mPaused)
-            {
-                mPlayer.Update(gameTime, mPlanets, mDebris, mGates, keyboard);
-
-                Debris[] newDebris = mPlayer.NewDebris();
-                if (newDebris != null)
-                {
-                    mDebris.AddRange(newDebris);
-                }
-
-                foreach (Debris d in mDebris)
-                {
-                    d.Update(gameTime, mPlanets);
-                }
-            }
-
-            if (mStarter != null && !mPaused)
-            {
-                float elapsed = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-                if (mStarter.Value < kWarmupDelay && mStarter.Value + elapsed > kWarmupDelay)
-                {
-                    mStarterDong.Play();
-                }
-                else if (mStarter.Value < kWarmupDelay + kLightLength && mStarter.Value + elapsed > kWarmupDelay + kLightLength)
-                {
-                    mStarterDong.Play();
-                }
-                else if ((!RaceStarted()) && (mStarter.Value + elapsed) > kTotalStartDelay)
-                {
-                    mStarterDing.Play();
-                    mPaused = false;
-                }
-                mStarter = mStarter.Value + elapsed;
-            }
-
-            if (mStarter == null)
-            {
-                CheckLoadLevel(keyboard);
-            }
-            if (mPlayer.State == PlayerState.Reset || (mStarter == null && keyboard.IsKeyDown(Keys.Space)))
-            {
-                mScroll = kInitialScroll;
-                mPlayer.Reset(new Vector2(0, 0));
-                ResetDebris();
-                ResetGates();
-                mStarter = 0;
-                mPaused = false;
-                mAllowEdits = false;
-            }
-            else if (mPlayer.State == PlayerState.Dead || mPlayer.State == PlayerState.Finished)
-            {
-                CheckLoadLevel(keyboard);
-
-                if (mStarter != null)
-                {
-                    mRaceTime = mStarter.Value;
-                    if (mPlayer.State == PlayerState.Finished)
-                    {
-                        mStats[mLevel].Add(new Stats(mRaceTime, mGates.Where(x => !x.HasPassed).Count()));
-                    }
-                }
-                mStarter = null;
-            }
-
             if (mAllowEdits)
             {
                 const int kScrollStep = 5;
@@ -125,78 +54,7 @@ namespace RGG2010
                 Edit(Mouse.GetState(), Keyboard.GetState());
             }
 
-            if (keyboard.IsKeyDown(Keys.P))
-            {
-                if (!mPausedDown)
-                {
-                    mPaused = !mPaused;
-                }
-                mPausedDown = true;
-            }
-            else
-            {
-                mPausedDown = false;
-            }
-
             UpdateOffset(mPlayer);
-            base.Update(gameTime);
-        }
-
-        private void CheckLoadLevel(KeyboardState keyboard)
-        {
-            if (keyboard.IsKeyDown(Keys.D1))
-            {
-                LoadLevel(1);
-            }
-            else if (keyboard.IsKeyDown(Keys.D2))
-            {
-                LoadLevel(2);
-            }
-            else if (keyboard.IsKeyDown(Keys.D3))
-            {
-                LoadLevel(3);
-            }
-            else if (keyboard.IsKeyDown(Keys.D4))
-            {
-                LoadLevel(4);
-            }
-            else if (keyboard.IsKeyDown(Keys.D5))
-            {
-                LoadLevel(5);
-            }
-            else if (keyboard.IsKeyDown(Keys.D6))
-            {
-                LoadLevel(6);
-            }
-            else if (keyboard.IsKeyDown(Keys.D7))
-            {
-                LoadLevel(7);
-            }
-            else if (keyboard.IsKeyDown(Keys.D8))
-            {
-                LoadLevel(8);
-            }
-            else if (keyboard.IsKeyDown(Keys.D9))
-            {
-                LoadLevel(9);
-            }
-#if DEBUG
-            else if(keyboard.IsKeyDown(Keys.E))
-            {
-                mAllowEdits = true;
-            }
-#endif
-        }
-
-        private void ResetDebris()
-        {
-            mDebris.RemoveAll(x => x.IsPlayerDebris());
-            mDebris.ForEach(x => x.Reset());
-        }
-
-        private void ResetGates()
-        {
-            mGates.ForEach(x => x.Reset());
         }
 
         private class EditInteraction
@@ -466,80 +324,6 @@ namespace RGG2010
         {
             return new Vector2(mouse.X, mouse.Y) - mScroll;
         }
-
-        private void UpdateOffset(Player player)
-        {
-            if (mAllowEdits || player.State != PlayerState.Alive)
-            {
-                return;
-            }
-            float left = -mScroll.X;
-            float width = Window.ClientBounds.Width;
-            float top = -mScroll.Y;
-            float height = Window.ClientBounds.Height;
-            float bottom = top + height;
-            const float kPad = 300;
-
-            if (player.Location.X - kPad < left)
-            {
-                left = player.Location.X - kPad;
-            }
-            else if (player.Location.X + kPad > left + width)
-            {
-                left = player.Location.X - width + kPad;
-            }
-            if (player.Location.Y - kPad < top)
-            {
-                top = player.Location.Y - kPad;
-            }
-            else if (player.Location.Y + kPad > top + height)
-            {
-                top = player.Location.Y - height + kPad;
-            }
-            mScroll = new Vector2(-left, -top);
-        }
-
-        /// <summary>
-        /// This is called when the game should draw itself.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        protected override void Draw(GameTime gameTime)
-        {
-            GraphicsDevice.Clear(new Color(0, 0, 10));
-
-            // TODO: Add your drawing code here
-
-            base.Draw(gameTime);
-            mStarfield.Draw(mSpriteBatch, mScroll, Window.ClientBounds.Width, Window.ClientBounds.Height);
-
-            mSpriteBatch.Begin();
-            foreach (Planet planet in mPlanets)
-            {
-                planet.Draw(mSpriteBatch, mScroll);
-            }
-            mSpriteBatch.End();
-
-            foreach (Gate g in mGates)
-            {
-                g.Draw(mSpriteBatch, mScroll, g == mGates.Last());
-            }
-
-            foreach (Debris d in mDebris)
-            {
-                d.Draw(mSpriteBatch, mScroll);
-            }
-
-            mPlayer.Draw(mSpriteBatch, mScroll);
-
-            DrawHud(gameTime);
-        }
-
-        private void DrawStat(SpriteFont font, string line, ref Vector2 statsLocation)
-        {
-            const float kPad = 10;
-            mSpriteBatch.DrawString(font, line, statsLocation, Color.SteelBlue);
-            statsLocation += new Vector2(0, mHudFont.MeasureString(line).Y + kPad);
-        }
     }
 }
 */
@@ -616,6 +400,7 @@ var Scrace = function () {
     this.gates = [];
     this.player = new Player();
     this.level = 1;
+    this.scroll = new Vector(0,0);
     
     this.paused = true;
     this.pauseDown = false;
@@ -726,6 +511,7 @@ var Scrace = function () {
     
     this.setupStart = function() {
         if (self.resetting) {
+            self.scroll.set(self.canvas.width * 0.5, self.canvas.height * 0.5);
             self.player.reset(new Vector(0,0));
             self.lastTime = getTimestamp();
             self.starter = 0;
@@ -814,6 +600,33 @@ var Scrace = function () {
         self.pauseDown = pauseDown;
         
         self.lastTime = now;
+        
+        self.updateScroll(player);
+    }
+    
+    this.updateScroll = function(player) {
+        if (self.allowEdits || player.state != PlayerState.Alive) {
+            return;
+        }
+        var left = -self.scroll.x,
+            width = self.canvas.width,
+            top = -self.scroll.y,
+            height = self.canvas.height,
+            bottom = top + height,
+            hPad = self.canvas.width * 0.25,
+            vPad = self.canvas.width * 0.25;
+
+        if (player.location.x - hPad < left) {
+            left = player.location.x - hPad;
+        } else if (player.location.x + hPad > left + width) {
+            left = player.location.x - width + hPad;
+        }
+        if (player.location.y - vPad < top) {
+            top = player.location.y - vPad;
+        } else if (player.location.y + vPad > top + height) {
+            top = player.location.y - height + vPad;
+        }
+        self.scroll.set(-left, -top);
     }
     
     this.checkHighscore = function(raceStats) {
@@ -892,18 +705,17 @@ var Scrace = function () {
     
     this.draw = function() {
         requestAnimationFrame(self.draw);
-        var offset = addVectors(new Vector(self.canvas.width / 2, self.canvas.height /2), scaleVector(self.player.location,-1));
-        self.starfield.draw(self.context, offset, self.canvas.width, self.canvas.height);
+        self.starfield.draw(self.context, self.scroll, self.canvas.width, self.canvas.height);
         for (var i = 0; i < self.planets.length; ++i) {
-            self.planets[i].draw(self.context, offset);
+            self.planets[i].draw(self.context, self.scroll);
         }
         for (i = 0; i < self.debris.length; ++i) {
-            self.debris[i].draw(self.context, offset);
+            self.debris[i].draw(self.context, self.scroll);
         }
         for (i = 0; i < self.gates.length; ++i) {
-            self.gates[i].draw(self.context, offset, i == self.gates.length - 1);
+            self.gates[i].draw(self.context, self.scroll, i == self.gates.length - 1);
         }
-        self.player.draw(self.context, offset);
+        self.player.draw(self.context, self.scroll);
         
         self.drawHud();
     }
