@@ -600,10 +600,9 @@ var Scrace = function () {
         self.pauseDown = pauseDown;
         
         self.lastTime = now;
-        
-        self.updateScroll(player);
     }
     
+    // Alternate scrolling behaviour.
     this.updateScroll = function(player) {
         if (self.allowEdits || player.state != PlayerState.Alive) {
             return;
@@ -705,6 +704,10 @@ var Scrace = function () {
     
     this.draw = function() {
         requestAnimationFrame(self.draw);
+        self.scroll.set(
+            self.canvas.width * 0.5 - self.player.location.x,
+            self.canvas.height * 0.5 - self.player.location.y
+        );
         self.starfield.draw(self.context, self.scroll, self.canvas.width, self.canvas.height);
         for (var i = 0; i < self.planets.length; ++i) {
             self.planets[i].draw(self.context, self.scroll);
