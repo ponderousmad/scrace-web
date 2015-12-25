@@ -23,27 +23,6 @@ namespace RGG2010
 
         private const int kLevels = 5;
 
-        private void StoreLevel()
-        {
-            string path = System.IO.Path.Combine(ContentBuildPath, @"Levels\\Level" + mLevel.ToString() + ".xml");
-            using (Utils.DocumentWriter writer = new RGG2010.Utils.DocumentWriter(path))
-            using (Utils.IDataWriter root = writer["Level"])
-            {
-                foreach (Planet planet in mPlanets)
-                {
-                    planet.Store(root);
-                }
-                foreach (Debris debris in mDebris)
-                {
-                    debris.Store(root);
-                }
-                foreach (Gate gate in mGates)
-                {
-                    gate.Store(root);
-                }
-            }
-        }
-
 
         /// <summary>
         /// Allows the game to run logic such as updating the world,
@@ -676,7 +655,10 @@ var Scrace = function () {
             for (i = 0; i < debrisData.length; ++i) {
                 var d = debrisData[i];
                 var location = parseVector(d);
-                var velocity = d.velocity ? parseVector(d.velocity) : null;
+                var velocity = d["Velocity"] ? parseVector(d["Velocity"]) : null;
+                if (velocity != null) {
+                    console.log("Got velocity: " + velocity.x + ", " + velocity.y);
+                }
                 var type = DebrisNames[d.type];
                 self.debris.push(new Debris(type, location, velocity));
             }
@@ -691,9 +673,37 @@ var Scrace = function () {
             }
             
             self.setupStart();
+            
+            var saveDiv = document.getElementById("save");
+            
+            saveDiv.innerHTML = JSON.stringify(self.storeLevel(), null, 4);
         };
         request.send();
     }
+    
+    this.storeLevel = function () {
+        var planets = [];
+        var debris = [];
+        var gates = [];
+        
+        for (var i = 0; i < self.planets.length; ++i) {
+            self.planets[i].store(planets);
+        }
+        
+        for (i = 0; i < self.debris.length; ++i) {
+            self.debris[i].store(debris);
+        }
+        
+        for (i = 0; i < self.gates.length; ++i) {
+            self.gates[i].store(gates);
+        }
+        
+        return {
+            Planets: planets,
+            Debris: debris,
+            Gates: gates
+        };
+    };
     
     this.loadCurrentLevel = function() {
         self.loadLevel("tracks/level" + self.level + ".json");

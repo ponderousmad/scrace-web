@@ -53,25 +53,32 @@ Debris.prototype.reset = function () {
     this.destroyed = false;
 };
 
-Debris.prototype.store = function () {
+Debris.prototype.store = function (dest) {
     if (this.isPlayerDebris()) {
         // Don't store exploding player.
         return;
     }
-    /*
-    using (IDataWriter element = doc["Debris"])
-    {
-        element.Attribute("type", mType.ToString());
-        DocumentWriter.WriteVector(element, mStartLocation);
-        if (mStartVelocity != null)
-        {
-            using (IDataWriter velocity = element["Velocity"])
-            {
-                DocumentWriter.WriteVector(velocity, mStartVelocity.Value);
-            }
+    var debrisType = null;
+    for (var typeName in DebrisNames) {
+        if (DebrisNames[typeName] === this.type) {
+            debrisType = typeName;
         }
     }
-    */
+    
+    var rep = {
+        type: debrisType,
+        x: this.startLocation.x,
+        y: this.startLocation.y
+    };
+    
+    if (this.startVelocity) {
+        rep["Velocity"] = {
+            x: this.startVelocity.x,
+            y: this.startVelocity.y
+        };
+    }
+    
+    dest.push(rep);
 };
 
 Debris.prototype.isPlayerDebris = function () {

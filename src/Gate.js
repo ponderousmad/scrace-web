@@ -28,14 +28,12 @@ var Gate = function (location, angle) {
     this.span = subVectors(this.rightEnd, this.leftEnd);
 };
 
-Gate.prototype.store = function () {
-    /*
-    using (IDataWriter element = doc["Gate"])
-    {
-        DocumentWriter.WriteVector(element, mLocation);
-        element.Attribute("angle", mAngle.ToString());
-    }
-    */
+Gate.prototype.store = function (dest) {
+    dest.push({
+        x: this.location.x,
+        y: this.location.y,
+        angle: this.angle
+    });
 };
 
 Gate.prototype.setAngle = function (angle) {

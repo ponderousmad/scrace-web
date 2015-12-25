@@ -39,15 +39,19 @@ var Planet = function (type, location, gravity) {
     this._halfSize = null;
 };
     
-Planet.prototype.store = function () {
-    /*
-    using (IDataWriter element = doc["Planet"])
-    {
-        element.Attribute("type", mType.ToString());
-        element.Attribute("gravity", DocumentWriter.AsString(mGravity));
-        DocumentWriter.WriteVector(element, mLocation);
+Planet.prototype.store = function (dest) {
+    var planetType = null;
+    for (var typeName in PlanetNames) {
+        if (PlanetNames[typeName] === this.type) {
+            planetType = typeName;
+        }
     }
-    */
+    dest.push({
+        type: planetType,
+        gravity: this.gravity,
+        x: this.location.x,
+        y: this.location.y
+    });
 };
 
 Planet.prototype.size = function () {
