@@ -748,13 +748,14 @@ var Scrace = function () {
         if(self.paused) {
             delta = 0;
         }
+        
+        if (!self.paused && (self.starter != null || self.player.state === PlayerState.Dead)) {
+            for (i = 0; i < self.debris.length; ++i) {
+                self.debris[i].update(delta, self.planets);
+            }
+        }
 
         if (self.starter != null) {
-            if (!self.paused) {
-                for (i = 0; i < self.debris.length; ++i) {
-                    self.debris[i].update(delta, self.planets);
-                }
-            }
             
             if (self.starter < kWarmupDelay && self.starter + delta > kWarmupDelay)
             {
