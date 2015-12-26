@@ -25,8 +25,6 @@ namespace RGG2010
             {
                 Edit(Mouse.GetState(), Keyboard.GetState());
             }
-
-            UpdateOffset(mPlayer);
         }
 
         private class EditInteraction
@@ -156,52 +154,6 @@ namespace RGG2010
                     mCurrentEdit.Update(mouse, keyboard);
                 }
             }
-        }
-
-        private Planet FindClickedPlanet(MouseState mouse)
-        {
-            foreach (Planet p in mPlanets)
-            {
-                if (p.Contains(ToSpace(mouse)))
-                {
-                    return p;
-                }
-            }
-            return null;
-        }
-
-        private Debris FindClickedDebris(MouseState mouse)
-        {
-            foreach (Debris d in mDebris)
-            {
-                if (d.Contains(ToSpace(mouse)))
-                {
-                    return d;
-                }
-            }
-            return null;
-        }
-
-        private Gate FindClickedGate(MouseState mouse)
-        {
-            foreach (Gate g in mGates)
-            {
-                if (g.Contains(ToSpace(mouse)))
-                {
-                    return g;
-                }
-            }
-            return null;
-        }
-
-        private bool IsShift(KeyboardState keyboard)
-        {
-            return keyboard.IsKeyDown(Keys.LeftShift) || keyboard.IsKeyDown(Keys.RightShift);
-        }
-
-        private bool IsControl(KeyboardState keyboard)
-        {
-            return keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl);
         }
 
         private EditInteraction PlanetCreator(MouseState mouseStart)
@@ -388,6 +340,7 @@ var Scrace = function () {
     this.context = this.canvas.getContext("2d");
     this.context.font = "15px monospace";
     this.keyboardState = new KeyboardState(window);
+    this.mouseState = new MouseState(this.canvas);
     this.scroll = new Vector(this.canvas.width * 0.5, this.canvas.height * 0.5);
    
     var self = this;
@@ -485,6 +438,7 @@ var Scrace = function () {
             self.lastTime = getTimestamp();
             self.starter = 0;
             self.raceTime = null;
+            self.allowEdits = false;
             self.paused = false;
             self.resetting = false;
         }
@@ -498,6 +452,7 @@ var Scrace = function () {
         var i = 0;
         var now = getTimestamp();
         var delta = now - self.lastTime;
+        var trueDelta = delta;
         var player = self.player;
         
         if(self.paused) {
@@ -529,9 +484,21 @@ var Scrace = function () {
         
         player.update((self.paused || !self.raceStarted()) ? 0 : delta, self.planets, self.debris, self.gates, self.keyboardState);
         
-        var pauseDown = self.keyboardState.isKeyDown("P".charCodeAt());
+                
+        var raceOver = player.state == PlayerState.Reset ||
+                       player.state == PlayerState.Dead ||
+                       player.state == PlayerState.Finished;
         
-        if (player.state == PlayerState.Reset || player.state == PlayerState.Dead || player.state == PlayerState.Finished) {
+        var pauseDown = self.keyboardState.isAsciiDown("P");        
+        if (self.allowEdits || !raceOver) {
+            if (self.pauseDown != pauseDown && pauseDown && (self.starter != null || self.allowEdits)) {
+                self.paused = ! self.paused;
+                console.log("Toggled pause");
+            }
+        }
+        self.pauseDown = pauseDown;
+        
+        if (raceOver) {
             if (self.raceTime == null && self.starter != null) {
                 var missCount = 0;
                 for (i = 0; i < self.gates.length; ++i) {
@@ -554,32 +521,31 @@ var Scrace = function () {
                     }
                 }
                 
-                if(!self.resetting && player.state == PlayerState.Reset) {
-                    self.resetting = true;
-                    self.resetLevel();
+                if (!self.resetting) {
+                    if (player.state == PlayerState.Reset) {
+                        self.resetting = true;
+                        self.resetLevel();
+                    } else if (self.keyboardState.isAsciiDown("E")) {
+                        self.allowEdits = true;
+                        self.paused = true;
+                        self.resetLevel();
+                   }
                 }
-            }
-        } else {
-            if (self.pauseDown != pauseDown && pauseDown && self.starter != null) {
-                self.paused = ! self.paused;
-                console.log("Toggled pause");
             }
         }
         
-        self.pauseDown = pauseDown;
-        
-        if (self.allowEdits || player.state === PlayerState.Dead) {
+        if (player.state === PlayerState.Dead) {
             var kScrollStep = 1;
             if (self.keyboardState.isKeyDown(Keys.Left)) {
-                self.scroll.x += kScrollStep * delta;
+                self.scroll.x += kScrollStep * trueDelta;
             } else if (self.keyboardState.isKeyDown(Keys.Right)) {
-                self.scroll.x -= kScrollStep * delta;
+                self.scroll.x -= kScrollStep * trueDelta;
             }
             
             if (self.keyboardState.isKeyDown(Keys.Up)) {
-                self.scroll.y += kScrollStep * delta;
+                self.scroll.y += kScrollStep * trueDelta;
             } else if (self.keyboardState.isKeyDown(Keys.Down)) {
-                self.scroll.y -= kScrollStep * delta;
+                self.scroll.y -= kScrollStep * trueDelta;
             }
         } else {
             self.scroll.set(
@@ -616,6 +582,37 @@ var Scrace = function () {
         }
         self.scroll.set(-left, -top);
     }
+    
+    this.spaceLocation = function(mouseState) {
+        return addVectors(self.scroll, mouseState.location);
+    }
+    
+    this.findClickedPlanet = function (mouseState) {
+        for (var i = 0; i < self.planets.length; ++i) {
+            if (self.planets[i].contains(self.spaceLocation(mouseState))) {
+                return self.planets[i];
+            }
+        }
+        return null;
+    };
+    
+    this.findClickedDebris = function (mouseState) {
+        for (var i = 0; i < self.debris.length; ++i) {
+            if (self.debris[i].contains(self.spaceLocation(mouseState))) {
+                return self.debris[i];
+            }
+        }
+        return null;
+    };
+    
+    this.findClickedGate = function (mouseState) {
+        for (var i = 0; i < self.gates.length; ++i) {
+            if (self.gates[i].contains(self.spaceLocation(mouseState))) {
+                return self.gates[i];
+            }
+        }
+        return null;
+    };
     
     this.checkHighscore = function(raceStats) {
         var kMaxStats = 5;
@@ -688,6 +685,10 @@ var Scrace = function () {
                     }
                 }
             }
+        } else {
+            self.context.fillStyle = "rgb(0,255,255)";
+            self.context.textAlign = "start";
+            self.context.fillText("Editing: " + self.mouseState.location.x + ", " + self.mouseState.location.y, hudOffset, hudOffset);
         }
     }
     
