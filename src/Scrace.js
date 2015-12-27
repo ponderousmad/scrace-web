@@ -85,9 +85,15 @@ var Scrace = function () {
     this.editDebris = null;
     this.editGate = null;
     this.lastGateAngle = 0;
-    this.keysActive = 
+    this.keysActive = true;
     
-    this.highscores = {};
+    try {
+        this.highscores = JSON.parse(window.localStorage.getItem("scrace_highscores")) || {};
+    } catch (error) {
+        console.log("Error loading scores: " + error);
+        this.highscores = {};
+    }
+    
     this.raceTime = null;
     
     this.canvas = document.getElementById("canvas");
@@ -511,11 +517,13 @@ var Scrace = function () {
     
     this.checkHighscore = function(raceStats) {
         var kMaxStats = 5;
+        
+        var prevHighscores = JSON.stringify(self.highscores);
         if (!self.highscores[self.level]) {
             self.highscores[self.level] = [raceStats];
         } else {
             var levelScores = self.highscores[self.level];
-            
+
             for (var i = 0; i < levelScores.length; ++i) {
                 if (raceStats.score < levelScores[i].score) {
                     levelScores.splice(i, 0, raceStats);
@@ -523,14 +531,23 @@ var Scrace = function () {
                     break;
                 }
             }
-            
+
             if(raceStats != null) {
                 levelScores.push(raceStats);
             }
-            
+
             if (levelScores.length > kMaxStats) {
                 levelScores.pop();
             }
+        }
+        
+        try {
+            var newHighscores = JSON.stringify(self.highscores);
+            if (newHighscores != prevHighscores) {
+                window.localStorage.setItem("scrace_highscores", newHighscores);
+            }
+        } catch (error) {
+            console.log("Error storing scores: " + error);
         }
     }
    
