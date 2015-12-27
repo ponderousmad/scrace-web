@@ -18,6 +18,10 @@ var KeyboardState = function (element) {
 KeyboardState.prototype.isKeyDown = function (keyCode) {
     return this.pressed[keyCode] ? true : false;
 };
+
+KeyboardState.prototype.isCtrlDown = function() {
+    return this.isKeyDown(17);
+};
    
 KeyboardState.prototype.isAsciiDown = function (ascii) {
     return this.isKeyDown(ascii.charCodeAt());
@@ -43,8 +47,7 @@ var MouseState = function (element) {
     this.alt = false;
     
     var self = this;
-    
-    element.addEventListener("mousemove", function (event) {
+    var updateState = function (event) {
         var bounds = element.getBoundingClientRect();
         self.location.set(event.clientX - bounds.left, event.clientY - bounds.top);
         self.left = (event.buttons & 1) == 1;
@@ -53,5 +56,9 @@ var MouseState = function (element) {
         self.shift = event.shiftKey;
         self.ctrl = event.ctrlKey;
         self.altKey = event.altKey;
-    });
+    };
+    
+    element.addEventListener("mousemove", updateState);
+    element.addEventListener("mousedown", updateState);
+    element.addEventListener("mouseup", updateState);
 };

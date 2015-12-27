@@ -6,7 +6,8 @@ var PlanetType = {
     BrownRocky : 2,
     GreenGasGiant : 3,
     RockyForest : 4,
-    PurpleGiant : 5
+    PurpleGiant : 5,
+    COUNT : 6
 };
 
 var PlanetNames = {
@@ -33,21 +34,34 @@ var Planet = function (type, location, gravity) {
     this.type = type;
     this.image = planetImages[type];
     this.location = location;
-    this.gravity = gravity;
+    this.gravity = parseFloat(gravity);
 
     this._size = null;
     this._halfSize = null;
+    this._drawLocation = location.clone();
 };
-    
-Planet.prototype.store = function (dest) {
-    var planetType = null;
+
+Planet.prototype.setType = function(type) {
+    type = type % PlanetType.COUNT;
+    this.type = type;
+    this.image = planetImages[type];
+
+    this._size = null;
+    this._halfSize = null;
+}
+
+Planet.prototype.typeName = function () {
     for (var typeName in PlanetNames) {
         if (PlanetNames[typeName] === this.type) {
-            planetType = typeName;
+            return typeName;
         }
     }
+    return null;
+}
+    
+Planet.prototype.store = function (dest) {
     dest.push({
-        type: planetType,
+        type: this.typeName(),
         gravity: this.gravity,
         x: this.location.x,
         y: this.location.y
@@ -74,12 +88,14 @@ Planet.prototype.contains = function (point) {
 Planet.prototype.draw = function (context, offset) {
     if (!planetsBatch.loaded) {
         return;
-    } else if (this.halfSize == null) {
-        this.halfSize = new Vector(this.image.width * 0.5, this.image.height * 0.5);
+    } else if (this._halfSize == null) {
+        this._halfSize = new Vector(this.image.width * 0.5, this.image.height * 0.5);
     }
-    var drawLocation = addVectors(this.location, offset);
-    drawLocation.sub(this.halfSize);
-    context.drawImage(this.image, drawLocation.x, drawLocation.y);
+    var drawAt = this._drawLocation;
+    drawAt.copy(this.location);
+    drawAt.add(offset);
+    drawAt.sub(this._halfSize);
+    context.drawImage(this.image, drawAt.x, drawAt.y);
 };
 
 Planet.prototype.determineAcceleration = function (location, maxDistSq, elapsed) {

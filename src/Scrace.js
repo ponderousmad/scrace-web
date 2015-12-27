@@ -1,257 +1,5 @@
 "use strict";
 
-/*
-namespace RGG2010
-{
-    /// <summary>
-    /// This is the main type for your game
-    /// </summary>
-    public class Scrace : Microsoft.Xna.Framework.Game
-    {
-        private bool mAllowEdits = false;
-        private Planet mEditPlanet = null;
-        private Debris mEditDebris = null;
-        private float mLastGateAngle = 0;
-        private Gate mEditGate = null;
-
-        /// <summary>
-        /// Allows the game to run logic such as updating the world,
-        /// checking for collisions, gathering input, and playing audio.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        protected override void Update(GameTime gameTime)
-        {
-            if (mAllowEdits)
-            {
-                Edit(Mouse.GetState(), Keyboard.GetState());
-            }
-        }
-
-        private class EditInteraction
-        {
-            public delegate void EditEvent(MouseState mouse, KeyboardState keyboard);
-
-            private EditEvent mUpdate;
-            private EditEvent mFinalize;
-
-            public EditInteraction(EditEvent update)
-                : this(update, null)
-            {
-            }
-
-            public EditInteraction(EditEvent update, EditEvent finalize)
-            {
-                mUpdate = update;
-                mFinalize = finalize;
-            }
-
-            public void Finalize(MouseState mouse, KeyboardState keyboard)
-            {
-                if (mFinalize != null)
-                {
-                    mFinalize(mouse, keyboard);
-                }
-            }
-
-            public void Update(MouseState mouse, KeyboardState keyboard)
-            {
-                if (mUpdate != null)
-                {
-                    mUpdate(mouse, keyboard);
-                }
-            }
-        }
-
-        private EditInteraction mCurrentEdit = null;
-        bool mKeysActive = true;
-
-        private void Edit(MouseState mouse, KeyboardState keyboard)
-        {
-            if (keyboard.GetPressedKeys().Length == 0)
-            {
-                mKeysActive = true;
-            }
-            if (mCurrentEdit == null)
-            {
-                if (mouse.LeftButton == ButtonState.Pressed)
-                {
-                    if (keyboard.IsKeyDown(Keys.C))
-                    {
-                        mCurrentEdit = PlanetCreator(mouse);
-                    }
-                    else if (keyboard.IsKeyDown(Keys.D))
-                    {
-                        mCurrentEdit = DebrisCreator(mouse);
-                    }
-                    else if (keyboard.IsKeyDown(Keys.V))
-                    {
-                        mCurrentEdit = DebrisVelocity(mouse);
-                    }
-                    else if (keyboard.IsKeyDown(Keys.G))
-                    {
-                        mCurrentEdit = GateCreator(mouse);
-                    }
-                    else if (keyboard.IsKeyDown(Keys.H))
-                    {
-                        mCurrentEdit = GateDirection(mouse);
-                    }
-                    else
-                    {
-                        mEditPlanet = FindClickedPlanet(mouse);
-                        mEditDebris = FindClickedDebris(mouse);
-                        mEditGate = FindClickedGate(mouse);
-                    }
-                }
-                else if (mAllowEdits && mKeysActive)
-                {
-                    if (keyboard.IsKeyDown(Keys.S) && IsControl(keyboard))
-                    {
-                        StoreLevel();
-                        mKeysActive = false;
-                    }
-                    else if (keyboard.IsKeyDown(Keys.R))
-                    {
-                        ResetDebris();
-                    }
-
-                    if (mEditPlanet != null)
-                    {
-                        if (keyboard.IsKeyDown(Keys.T))
-                        {
-                            mEditPlanet.Type = (PlanetType)(((int)mEditPlanet.Type + 1) % Enum.GetValues(typeof(PlanetType)).Length);
-                            mKeysActive = false;
-                        }
-                        else if (keyboard.IsKeyDown(Keys.OemOpenBrackets))
-                        {
-                            mEditPlanet.Gravity += 0.5f;
-                            mKeysActive = false;
-                        }
-                        else if (keyboard.IsKeyDown(Keys.OemCloseBrackets))
-                        {
-                            mEditPlanet.Gravity = Math.Max(0.5f, mEditPlanet.Gravity - 0.5f);
-                            mKeysActive = false;
-                        }
-                    }
-                    else if (mEditDebris != null)
-                    {
-                        if (keyboard.IsKeyDown(Keys.T))
-                        {
-                            mEditDebris.Type = (DebrisType)(((int)mEditDebris.Type + 1) % Enum.GetValues(typeof(DebrisType)).Length);
-                            mKeysActive = false;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                if (mouse.LeftButton == ButtonState.Released)
-                {
-                    mCurrentEdit.Finalize(mouse, keyboard);
-                    mCurrentEdit = null;
-                }
-                else
-                {
-                    mCurrentEdit.Update(mouse, keyboard);
-                }
-            }
-        }
-
-        private EditInteraction PlanetCreator(MouseState mouseStart)
-        {
-            mEditPlanet = FindClickedPlanet(mouseStart);
-            if (mEditPlanet == null)
-            {
-                mEditDebris = null;
-                mEditPlanet = new Planet(PlanetType.Planetoid, ToSpace(mouseStart), 1);
-                mPlanets.Add(mEditPlanet);
-            }
-            return new EditInteraction(delegate(MouseState mouse, KeyboardState keyboard)
-            {
-                if (mEditPlanet != null)
-                {
-                    mEditPlanet.Location = ToSpace(mouse);
-                }
-            });
-        }
-
-        private EditInteraction DebrisCreator(MouseState mouseStart)
-        {
-            mEditDebris = FindClickedDebris(mouseStart);
-            if (mEditDebris == null)
-            {
-                mEditPlanet = null;
-                mEditDebris = new Debris(DebrisType.SmallAsteroid, ToSpace(mouseStart));
-                mDebris.Add(mEditDebris);
-            }
-            return new EditInteraction(delegate(MouseState mouse, KeyboardState keyboard)
-            {
-                if (mEditDebris != null)
-                {
-                    mEditDebris.Location = ToSpace(mouse);
-                }
-            });
-        }
-
-        private EditInteraction DebrisVelocity(MouseState mouseStart)
-        {
-            mEditDebris = FindClickedDebris(mouseStart);
-            if (mEditDebris == null)
-            {
-                return null;
-            }
-            return new EditInteraction(null, delegate(MouseState mouse, KeyboardState keyboard)
-            {
-                if (mEditDebris != null)
-                {
-                    mEditDebris.SetStartVelocity((ToSpace(mouse) - ToSpace(mouseStart)) * 0.01f);
-                }
-            });
-        }
-
-        private EditInteraction GateCreator(MouseState mouseStart)
-        {
-            mEditGate = FindClickedGate(mouseStart);
-            if (mEditGate == null)
-            {
-                mEditGate = new Gate(ToSpace(mouseStart), 0);
-                mEditGate.SetAngle(mLastGateAngle);
-                mGates.Add(mEditGate);
-            }
-            return new EditInteraction(delegate(MouseState mouse, KeyboardState keyboard)
-            {
-                if (mEditGate != null)
-                {
-                    mEditGate.Location = ToSpace(mouse);
-                }
-            });
-        }
-
-        private EditInteraction GateDirection(MouseState mouseStart)
-        {
-            mEditGate = FindClickedGate(mouseStart);
-            if (mEditGate == null)
-            {
-                return null;
-            }
-            return new EditInteraction(delegate(MouseState mouse, KeyboardState keyboard)
-            {
-                if (mEditGate != null)
-                {
-                    Vector2 direction = ToSpace(mouse) - ToSpace(mouseStart);
-                    mLastGateAngle = (float)Math.Atan2(direction.Y, direction.X);
-                    mEditGate.SetAngle(mLastGateAngle);
-                }
-            });
-        }
-
-        private Vector2 ToSpace(MouseState mouse)
-        {
-            return new Vector2(mouse.X, mouse.Y) - mScroll;
-        }
-    }
-}
-*/
-
 var getTimestamp = null;
 if (window.performance.now) {
     console.log("Using high performance timer");
@@ -332,6 +80,12 @@ var Scrace = function () {
     
     this.starter = null;
     this.allowEdits = false;
+    this.currentEdit = null;
+    this.editPlanet = null;
+    this.editDebris = null;
+    this.editGate = null;
+    this.lastGateAngle = 0;
+    this.keysActive = 
     
     this.highscores = {};
     this.raceTime = null;
@@ -352,6 +106,7 @@ var Scrace = function () {
         request.onload = function () {
             console.log("Loading " + resource);
             var planetData = request.response["Planets"];
+            self.editPlanet = null;
             self.planets.length = 0;
             for (var i = 0; i < planetData.length; ++i) {
                 var planet = planetData[i];
@@ -361,6 +116,7 @@ var Scrace = function () {
             }
             
             var debrisData = request.response["Debris"];
+            self.editDebris = null;
             self.debris.length = 0;
             for (i = 0; i < debrisData.length; ++i) {
                 var d = debrisData[i];
@@ -371,6 +127,7 @@ var Scrace = function () {
             }
             
             var gatesData = request.response["Gates"];
+            self.editGate = null;
             self.gates.length = 0;
             for (var i = 0; i < gatesData.length; ++i) {
                 var gate = gatesData[i];
@@ -380,15 +137,11 @@ var Scrace = function () {
             }
             
             self.setupStart();
-            
-            var saveDiv = document.getElementById("save");
-            
-            saveDiv.innerHTML = JSON.stringify(self.storeLevel(), null, 4);
         };
         request.send();
     }
     
-    this.storeLevel = function () {
+    this.storeTrack = function () {
         var planets = [];
         var debris = [];
         var gates = [];
@@ -405,11 +158,14 @@ var Scrace = function () {
             self.gates[i].store(gates);
         }
         
-        return {
+        var track = {
             Planets: planets,
             Debris: debris,
             Gates: gates
         };
+            
+        var saveDiv = document.getElementById("save");
+        saveDiv.innerHTML = JSON.stringify(track, null, 4);
     };
     
     this.loadCurrentLevel = function() {
@@ -554,6 +310,10 @@ var Scrace = function () {
             );
         }
         
+        if (self.allowEdits) {
+            self.updateEdit();
+        }
+        
         self.lastTime = now;
     }
     
@@ -583,36 +343,171 @@ var Scrace = function () {
         self.scroll.set(-left, -top);
     }
     
-    this.spaceLocation = function(mouseState) {
-        return addVectors(self.scroll, mouseState.location);
+    this.updateEdit = function () {
+        var keyboard = self.keyboardState;
+        if (keyboard.keysDown() == 0) {
+            self.keysActive = true;
+        }
+        if (self.currentEdit == null) {
+            if (self.mouseState.left) {
+                var location = self.toSpace(self.mouseState);
+                self.editGate = null;
+                self.editDebris = null;
+                self.editPlanet = self.planetAt(location);
+                if (keyboard.isAsciiDown("C") && self.editPlanet == null) {
+                    self.createPlanet(location);
+                }
+                if (self.editPlanet != null) {
+                    self.currentEdit = self.planetPlacer(location);
+                    return;
+                }
+                
+                self.editDebris = self.debrisAt(location);
+                if (keyboard.isAsciiDown("D") && self.editDebris == null) {
+                    self.createDebris(location);
+                }
+                if (self.editDebris != null) {
+                    if (keyboard.isAsciiDown("V")) {
+                        self.currentEdit = self.debrisFlinger(location);
+                    } else {
+                        self.currentEdit = self.debrisPlacer(location);
+                    }
+                    return;
+                }
+                
+                self.editGate = self.gateAt(location);
+                if (keyboard.isAsciiDown("G") && self.editGate == null) {
+                    self.createGate(location);
+                }
+                if (self.editGate != null) {
+                    if (keyboard.isAsciiDown("H")) {
+                        self.currentEdit = self.gateSpinner(location);
+                    } else {
+                        self.currentEdit = self.gatePlacer(location);
+                    }
+                }
+            } else if (self.allowEdits && self.keysActive) {
+                if (keyboard.isAsciiDown("S") && keyboard.isCtrlDown()) {
+                    self.storeTrack();
+                    self.keysActive = false;
+                }
+
+                var gravityStep = 0.125;
+                if (self.editPlanet != null) {
+                    if (keyboard.isAsciiDown("T")) {
+                        self.editPlanet.setType(self.editPlanet.type + 1);
+                        self.keysActive = false;
+                    } else if (keyboard.isAsciiDown("M")) {
+                        self.editPlanet.gravity += gravityStep;
+                        self.keysActive = false;
+                    } else if (keyboard.isAsciiDown("N")) {
+                        self.editPlanet.gravity = Math.max(gravityStep, self.editPlanet.gravity - gravityStep);
+                        self.keysActive = false;
+                    }
+                } else if (self.editDebris != null) {
+                    if (keyboard.isAsciiDown("T")) {
+                        self.editDebris.setDebrisType(self.editDebris.type === DebrisType.SmallAsteroid ? DebrisType.LargeAsteroid : DebrisType.SmallAsteroid);
+                        self.keysActive = false;
+                    }
+                }
+            }
+        } else if (!self.mouseState.left) {
+            self.currentEdit = null;
+        } else {
+            self.currentEdit(self.toSpace(self.mouseState));
+        }
     }
     
-    this.findClickedPlanet = function (mouseState) {
+    this.toSpace = function(mouseState) {
+        return subVectors(mouseState.location, self.scroll);
+    }
+    
+    this.planetAt = function (location) {
         for (var i = 0; i < self.planets.length; ++i) {
-            if (self.planets[i].contains(self.spaceLocation(mouseState))) {
+            if (self.planets[i].contains(location)) {
                 return self.planets[i];
             }
         }
         return null;
     };
     
-    this.findClickedDebris = function (mouseState) {
+    this.debrisAt = function (location) {
         for (var i = 0; i < self.debris.length; ++i) {
-            if (self.debris[i].contains(self.spaceLocation(mouseState))) {
+            if (self.debris[i].contains(location)) {
                 return self.debris[i];
             }
         }
         return null;
     };
     
-    this.findClickedGate = function (mouseState) {
+    this.gateAt = function (location) {
         for (var i = 0; i < self.gates.length; ++i) {
-            if (self.gates[i].contains(self.spaceLocation(mouseState))) {
+            if (self.gates[i].contains(location)) {
                 return self.gates[i];
             }
         }
         return null;
     };
+    
+    this.createPlanet = function(startLocation) {
+        self.editPlanet = new Planet(PlanetType.Planetoid, startLocation, 1);
+        self.planets.push(self.editPlanet);
+    };
+    
+    this.planetPlacer = function(startLocation) {
+        var offset = subVectors(self.editPlanet.location, startLocation);
+        return function(location) {
+            if (self.editPlanet) {
+                self.editPlanet.location = addVectors(location, offset);
+            }
+        };
+    };
+    
+    this.createDebris = function(location) {
+        self.editDebris = new Debris(DebrisType.SmallAsteroid, location);
+        self.debris.push(self.editDebris);
+    };
+    
+    this.debrisPlacer = function(startLocation) {
+        var offset = subVectors(self.editDebris.location, startLocation);
+        return function(location) {
+            if (self.editDebris) {
+                self.editDebris.location = addVectors(location, offset);
+            }
+        };
+    }; 
+
+    this.debrisFlinger = function (startLocation) {
+        return function(location) {
+            if (self.editDebris != null) {
+                self.editDebris.setStartVelocity(scaleVector(subVectors(location, startLocation), 0.01));
+            }
+        };
+    };
+
+    this.createGate = function(startLocation) {
+        self.editGate = new Gate(self.toSpace(self.mouseState), self.lastGateAngle);
+        self.gates.push(self.editGate);
+    };
+    
+    this.gatePlacer = function(startLocation) {
+        var offset = subVectors(self.editGate.location, startLocation);
+        return function(location) {
+            if (self.editGate != null) {
+                self.editGate.location = addVectors(location, offset);
+            }
+        };
+    };
+
+    this.gateSpinner = function(startLocation) {
+        return function(location) {
+            if (self.editGate != null) {
+                var direction = subVectors(location, startLocation);
+                self.lastGateAngle = Math.atan2(direction.y, direction.x);
+                self.editGate.setAngle(self.lastGateAngle);
+            }
+        };
+    }
     
     this.checkHighscore = function(raceStats) {
         var kMaxStats = 5;
@@ -688,7 +583,23 @@ var Scrace = function () {
         } else {
             self.context.fillStyle = "rgb(0,255,255)";
             self.context.textAlign = "start";
-            self.context.fillText("Editing: " + self.mouseState.location.x + ", " + self.mouseState.location.y, hudOffset, hudOffset);
+            var stateInfo = " ";
+            if (self.mouseState.ctrl) {
+                stateInfo += "ctrl ";
+            }
+            if (self.mouseState.left) {
+                stateInfo += "left ";
+            }
+            self.context.fillText("Editing: " + self.mouseState.location.x + ", " + self.mouseState.location.y + stateInfo, hudOffset, hudOffset);
+            if(self.editPlanet) {
+                self.context.fillText("Planet: " + self.editPlanet.typeName() + ", Gravity=" + self.editPlanet.gravity, hudOffset, 2 * hudOffset);
+            } else if(self.editDebris) {
+                var velocity = "none";
+                if (self.editDebris.startVelocity) {
+                    velocity = self.editDebris.startVelocity.x + ", " + self.editDebris.startVelocity.y;
+                }
+                self.context.fillText("Debris: " + self.editDebris.typeName() + ", Velocity=" + velocity, hudOffset, 2 * hudOffset);
+            }
         }
     }
     

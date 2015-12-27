@@ -14,6 +14,11 @@ Vector.prototype.set = function (x, y) {
     this.y = y;
 };
 
+Vector.prototype.copy = function (v) {
+    this.x = v.x;
+    this.y = v.y;
+};
+
 Vector.prototype.add = function (v) {
     this.x += v.x;
     this.y += v.y;

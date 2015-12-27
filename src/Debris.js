@@ -53,20 +53,23 @@ Debris.prototype.reset = function () {
     this.destroyed = false;
 };
 
+Debris.prototype.typeName = function () {
+    for (var typeName in DebrisNames) {
+        if (DebrisNames[typeName] === this.type) {
+            return typeName;
+        }
+    }
+    return null;
+}
+
 Debris.prototype.store = function (dest) {
     if (this.isPlayerDebris()) {
         // Don't store exploding player.
         return;
     }
-    var debrisType = null;
-    for (var typeName in DebrisNames) {
-        if (DebrisNames[typeName] === this.type) {
-            debrisType = typeName;
-        }
-    }
     
     var rep = {
-        type: debrisType,
+        type: this.typeName(),
         x: this.startLocation.x,
         y: this.startLocation.y
     };
