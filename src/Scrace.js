@@ -621,6 +621,8 @@ var Scrace = function () {
     }
     
     this.draw = function() {
+        self.canvas.width  = window.innerWidth;
+        self.canvas.height = window.innerHeight;
         requestAnimationFrame(self.draw);
         self.starfield.draw(self.context, self.scroll, self.canvas.width, self.canvas.height);
         for (var i = 0; i < self.planets.length; ++i) {
