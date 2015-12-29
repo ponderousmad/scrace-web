@@ -53,33 +53,31 @@ var Scrace = function () {
     var kWarmupDelay = 1000,
         kLightLength = 1000,
         kTotalStartDelay = kWarmupDelay + 2 * kLightLength,
-        kButtonWidth = 80,
-        kButtonHeight = 40,
         uiBatch = new ImageBatch("images/ui/");
-    
+
     this.starterAmberOff = uiBatch.load("AmberLightOff.png");
     this.starterAmberOn =  uiBatch.load("AmberLightOn.png");
     this.starterGreenOff = uiBatch.load("GreenLightOff.png");
     this.starterGreenOn =  uiBatch.load("GreenLightOn.png");
     this.introOverlay =    uiBatch.load("IntroOverlay.png");
-    
+
     uiBatch.commit();
 
     this.starterDong = new SoundEffect("audio/Dong.wav");
     this.starterDing = new SoundEffect("audio/Ding.wav");
-    
+
     this.starfield = new Starfield(5000, 5000, 0.001, 0.95, true);
     this.planets = [];
     this.debris = [];
     this.gates = [];
     this.player = new Player();
     this.level = 1;
-    
+
     this.paused = true;
     this.pauseDown = false;
     this.resetting = false;
     this.lastTime = getTimestamp();
-    
+
     this.starter = null;
     this.allowEdits = false;
     this.currentEdit = null;
@@ -88,16 +86,16 @@ var Scrace = function () {
     this.editGate = null;
     this.lastGateAngle = 0;
     this.keysActive = true;
-    
+
     try {
         this.highscores = JSON.parse(window.localStorage.getItem("scrace_highscores")) || {};
     } catch (error) {
         console.log("Error loading scores: " + error);
         this.highscores = {};
     }
-    
+
     this.raceTime = null;
-    
+
     this.canvas = document.getElementById("canvas");
     this.context = this.canvas.getContext("2d");
     this.context.font = "15px monospace";
@@ -111,14 +109,20 @@ var Scrace = function () {
         reset: false
     }
     this.touches = [];
-    this.scroll = new Vector(this.canvas.width * 0.5, this.canvas.height * 0.5);
-    
-    this.canvas.addEventListener("touchstart", this.updateTouch);
-    this.canvas.addEventListener("touchend", this.updateTouch);
-    this.canvas.addEventListener("touchmove", this.updateTouch);
-    this.canvas.addEventListener("touchcancel", this.updateTouch);
-   
+    this.buttonWidth = 80,
+    this.buttonHeight = 40,
+    this.scroll = new Vector(window.innerWidth * 0.5, window.innerHeight * 0.5);
+
     var self = this;
+    var handleTouch = function(e) {
+        self.updateTouch(e);
+        e.preventDefault();
+    }
+
+    this.canvas.addEventListener("touchstart", handleTouch);
+    this.canvas.addEventListener("touchend", handleTouch);
+    this.canvas.addEventListener("touchmove", handleTouch);
+    this.canvas.addEventListener("touchcancel", handleTouch);
 
     this.loadLevel = function (resource) {
         var request = new XMLHttpRequest();
@@ -135,7 +139,7 @@ var Scrace = function () {
                 var type = PlanetNames[planet.type];
                 self.planets.push(new Planet(type, location, planet.gravity));
             }
-            
+
             var debrisData = request.response["Debris"];
             self.editDebris = null;
             self.debris.length = 0;
@@ -146,7 +150,7 @@ var Scrace = function () {
                 var type = DebrisNames[d.type];
                 self.debris.push(new Debris(type, location, velocity));
             }
-            
+
             var gatesData = request.response["Gates"];
             self.editGate = null;
             self.gates.length = 0;
@@ -156,43 +160,43 @@ var Scrace = function () {
                 var angle = parseFloat(gate.angle);
                 self.gates.push(new Gate(location, angle));
             }
-            
+
             self.setupStart();
         };
         request.send();
     }
-    
+
     this.storeTrack = function () {
         var planets = [];
         var debris = [];
         var gates = [];
-        
+
         for (var i = 0; i < self.planets.length; ++i) {
             self.planets[i].store(planets);
         }
-        
+
         for (i = 0; i < self.debris.length; ++i) {
             self.debris[i].store(debris);
         }
-        
+
         for (i = 0; i < self.gates.length; ++i) {
             self.gates[i].store(gates);
         }
-        
+
         var track = {
             Planets: planets,
             Debris: debris,
             Gates: gates
         };
-            
+
         var saveDiv = document.getElementById("save");
         saveDiv.innerHTML = JSON.stringify(track, null, 4);
     };
-    
+
     this.loadCurrentLevel = function() {
         self.loadLevel("tracks/level" + self.level + ".json");
     }
-    
+
     this.resetLevel = function() {
         var filteredDebris = []
         for (var i = self.debris.length - 1; i >= 0; --i) {
@@ -207,10 +211,10 @@ var Scrace = function () {
         }
         self.setupStart();
     }
-    
+
     this.setupStart = function() {
         if (self.resetting) {
-            self.scroll.set(self.canvas.width * 0.5, self.canvas.height * 0.5);
+            self.scroll.set(self.canvas.width * 0.5, self.canvas.width * 0.5);
             self.player.reset(new Vector(0,0));
             self.lastTime = getTimestamp();
             self.starter = 0;
@@ -220,63 +224,62 @@ var Scrace = function () {
             self.resetting = false;
         }
     }
-    
+
     this.raceStarted = function () {
         return self.starter != null && self.starter >= kTotalStartDelay;
     }
-   
+
     this.updateTouch = function (event) {
         self.touches = event.touches;
     }
-    
+
     this.updateButtons = function() {
         self.touchState.up = false;
         self.touchState.down = false;
         self.touchState.left = false;
         self.touchState.right = false;
         self.touchState.reset = false;
-    
-        for (var i = 0; i < self.touches.touches; ++i) {
-            self.checkPointer(self.touches.touches[i]);
+
+        for (var i = 0; i < self.touches.length; ++i) {
+            self.checkPointer(self.touches[i]);
         }
         if (self.mouseState.left) {
             self.checkPointer({
-                clientX: self.mouseState.location.x,
-                clientY: self.mouseState.location.y
+                pageX: self.mouseState.location.x,
+                pageY: self.mouseState.location.y
             });
         }
     };
-    
+
     this.checkPointer = function (pointer) {
-        console.log("Checking: " + pointer.clientX + ", " + pointer.clientY);
-        if (pointer.clientY > self.canvas.height - kButtonHeight) {
-            if (pointer.clientX < kButtonWidth) {
+        if (pointer.pageY > self.canvas.height - self.buttonHeight) {
+            if (pointer.pageX < self.buttonWidth) {
                 self.touchState.left = true;
-            } else if (pointer.clientX < 2 * kButtonWidth) {
+            } else if (pointer.pageX < 2 * self.buttonWidth) {
                 self.touchState.right = true;
-            } else if (pointer.clientX < self.canvas.width - 2 * kButtonWidth) {
+            } else if (pointer.pageX < self.canvas.width - 2 * self.buttonWidth) {
                 self.touchState.reset = true;
-            } else if (pointer.clientX < self.canvas.width - kButtonWidth) {
+            } else if (pointer.pageX < self.canvas.width - self.buttonWidth) {
                 self.touchState.down = true;
             } else {
                 self.touchState.up = true;
             }
         }
     };
-   
+
     this.update = function() {
         var i = 0;
         var now = getTimestamp();
         var delta = now - self.lastTime;
         var trueDelta = delta;
         var player = self.player;
-        
+
         self.updateButtons();
-        
+
         if(self.paused) {
             delta = 0;
         }
-        
+
         if (!self.paused && (self.starter != null || self.player.state === PlayerState.Dead)) {
             for (i = 0; i < self.debris.length; ++i) {
                 self.debris[i].update(delta, self.planets);
@@ -284,7 +287,7 @@ var Scrace = function () {
         }
 
         if (self.starter != null) {
-            
+
             if (self.starter < kWarmupDelay && self.starter + delta > kWarmupDelay)
             {
                 self.starterDong.play();
@@ -299,15 +302,15 @@ var Scrace = function () {
             }
             self.starter += delta;
         }
-        
+
         player.update((self.paused || !self.raceStarted()) ? 0 : delta, self.planets, self.debris, self.gates, self.keyboardState, self.touchState);
-        
-                
+
+
         var raceOver = player.state == PlayerState.Reset ||
                        player.state == PlayerState.Dead ||
                        player.state == PlayerState.Finished;
-        
-        var pauseDown = self.keyboardState.isAsciiDown("P");        
+
+        var pauseDown = self.keyboardState.isAsciiDown("P");
         if (self.allowEdits || !raceOver) {
             if (self.pauseDown != pauseDown && pauseDown && (self.starter != null || self.allowEdits)) {
                 self.paused = ! self.paused;
@@ -315,7 +318,7 @@ var Scrace = function () {
             }
         }
         self.pauseDown = pauseDown;
-        
+
         if (raceOver) {
             if (self.raceTime == null && self.starter != null) {
                 var missCount = 0;
@@ -330,7 +333,7 @@ var Scrace = function () {
                 }
             }
             self.starter = null;
-            if (!self.resetting) {              
+            if (!self.resetting) {
                 for (var k = "1".charCodeAt(); k <= "5".charCodeAt(); ++k) {
                     if (self.keyboardState.isKeyDown(k)) {
                         self.resetting = true;
@@ -338,7 +341,7 @@ var Scrace = function () {
                         self.loadCurrentLevel();
                     }
                 }
-                
+
                 if (!self.resetting) {
                     if (player.state == PlayerState.Reset) {
                         self.resetting = true;
@@ -351,7 +354,7 @@ var Scrace = function () {
                 }
             }
         }
-        
+
         if (player.state === PlayerState.Dead) {
             var kScrollStep = 1;
             if (self.keyboardState.isKeyDown(Keys.Left)) {
@@ -359,7 +362,7 @@ var Scrace = function () {
             } else if (self.keyboardState.isKeyDown(Keys.Right)) {
                 self.scroll.x -= kScrollStep * trueDelta;
             }
-            
+
             if (self.keyboardState.isKeyDown(Keys.Up)) {
                 self.scroll.y += kScrollStep * trueDelta;
             } else if (self.keyboardState.isKeyDown(Keys.Down)) {
@@ -371,14 +374,14 @@ var Scrace = function () {
                 self.canvas.height * 0.5 - self.player.location.y
             );
         }
-        
+
         if (self.allowEdits) {
             self.updateEdit();
         }
-        
+
         self.lastTime = now;
     }
-    
+
     // Alternate scrolling behaviour.
     this.updateScroll = function(player) {
         if (self.allowEdits || player.state != PlayerState.Alive) {
@@ -404,7 +407,7 @@ var Scrace = function () {
         }
         self.scroll.set(-left, -top);
     }
-    
+
     this.updateEdit = function () {
         var keyboard = self.keyboardState;
         if (keyboard.keysDown() == 0) {
@@ -423,7 +426,7 @@ var Scrace = function () {
                     self.currentEdit = self.planetPlacer(location);
                     return;
                 }
-                
+
                 self.editDebris = self.debrisAt(location);
                 if (keyboard.isAsciiDown("D") && self.editDebris == null) {
                     self.createDebris(location);
@@ -436,7 +439,7 @@ var Scrace = function () {
                     }
                     return;
                 }
-                
+
                 self.editGate = self.gateAt(location);
                 if (keyboard.isAsciiDown("G") && self.editGate == null) {
                     self.createGate(location);
@@ -479,11 +482,11 @@ var Scrace = function () {
             self.currentEdit(self.toSpace(self.mouseState.location));
         }
     }
-    
+
     this.toSpace = function(clientLocation) {
         return subVectors(clientLocation, self.scroll);
     }
-    
+
     this.planetAt = function (location) {
         for (var i = 0; i < self.planets.length; ++i) {
             if (self.planets[i].contains(location)) {
@@ -492,7 +495,7 @@ var Scrace = function () {
         }
         return null;
     };
-    
+
     this.debrisAt = function (location) {
         for (var i = 0; i < self.debris.length; ++i) {
             if (self.debris[i].contains(location)) {
@@ -501,7 +504,7 @@ var Scrace = function () {
         }
         return null;
     };
-    
+
     this.gateAt = function (location) {
         for (var i = 0; i < self.gates.length; ++i) {
             if (self.gates[i].contains(location)) {
@@ -510,12 +513,12 @@ var Scrace = function () {
         }
         return null;
     };
-    
+
     this.createPlanet = function(startLocation) {
         self.editPlanet = new Planet(PlanetType.Planetoid, startLocation, 1);
         self.planets.push(self.editPlanet);
     };
-    
+
     this.planetPlacer = function(startLocation) {
         var offset = subVectors(self.editPlanet.location, startLocation);
         return function(location) {
@@ -524,12 +527,12 @@ var Scrace = function () {
             }
         };
     };
-    
+
     this.createDebris = function(location) {
         self.editDebris = new Debris(DebrisType.SmallAsteroid, location);
         self.debris.push(self.editDebris);
     };
-    
+
     this.debrisPlacer = function(startLocation) {
         var offset = subVectors(self.editDebris.location, startLocation);
         return function(location) {
@@ -537,7 +540,7 @@ var Scrace = function () {
                 self.editDebris.location = addVectors(location, offset);
             }
         };
-    }; 
+    };
 
     this.debrisFlinger = function (startLocation) {
         return function(location) {
@@ -551,7 +554,7 @@ var Scrace = function () {
         self.editGate = new Gate(location, self.lastGateAngle);
         self.gates.push(self.editGate);
     };
-    
+
     this.gatePlacer = function(startLocation) {
         var offset = subVectors(self.editGate.location, startLocation);
         return function(location) {
@@ -570,10 +573,10 @@ var Scrace = function () {
             }
         };
     }
-    
+
     this.checkHighscore = function(raceStats) {
         var kMaxStats = 5;
-        
+
         var prevHighscores = JSON.stringify(self.highscores);
         if (!self.highscores[self.level]) {
             self.highscores[self.level] = [raceStats];
@@ -596,7 +599,7 @@ var Scrace = function () {
                 levelScores.pop();
             }
         }
-        
+
         try {
             var newHighscores = JSON.stringify(self.highscores);
             if (newHighscores != prevHighscores) {
@@ -606,7 +609,7 @@ var Scrace = function () {
             console.log("Error storing scores: " + error);
         }
     }
-   
+
     this.drawHud = function() {
         var center = self.canvas.width * .5;
         var hudOffset = 20;
@@ -642,7 +645,7 @@ var Scrace = function () {
                 {
                     self.context.fillStyle = "rgb(0,255,255)";
                     self.context.textAlign = "center";
-                    
+
                     var offset = 350;
                     self.context.fillText("Best Times", center, offset);
 
@@ -675,59 +678,68 @@ var Scrace = function () {
             }
         }
     }
-    
+
     this.drawTouchControls = function() {
-        var HALF_WIDTH = kButtonWidth * 0.5,
-            FONT_SIZE = 24,
-            top = self.canvas.height - kButtonHeight,
-            yText = self.canvas.height - 12,
+        var halfWidth = self.buttonWidth * 0.5,
+            fontSize = Math.min(self.buttonHeight * 0.75, self.buttonWidth * 0.3),
+            top = self.canvas.height - self.buttonHeight,
+            yText = self.canvas.height + (fontSize * 0.4) - (self.buttonHeight * 0.5),
             strokeOffset = 2,
-            strokeHeight = kButtonHeight - 2 * strokeOffset,
-            strokeWidth = kButtonWidth - 2 * strokeOffset;
+            strokeHeight = self.buttonHeight - 2 * strokeOffset,
+            strokeWidth = self.buttonWidth - 2 * strokeOffset;
 
         self.context.save();
         self.context.textAlign = "center";
-        self.context.font = FONT_SIZE + "px monospace";
+        self.context.font = fontSize + "px monospace";
         self.context.fillStyle = "rgba(0,0,255,0.25)";
         self.context.strokeStyle = "rgba(128,128,255,0.25)";
-        self.context.fillRect(0, top, kButtonWidth * 2, kButtonHeight);
-        self.context.fillRect(self.canvas.width - kButtonWidth * 2, top, kButtonWidth * 2, kButtonHeight);
+        self.context.fillRect(0, top, self.buttonWidth * 2, self.buttonHeight);
+        self.context.fillRect(self.canvas.width - self.buttonWidth * 2, top, self.buttonWidth * 2, self.buttonHeight);
         self.context.strokeRect(strokeOffset, top + strokeOffset, strokeWidth, strokeHeight);
-        self.context.strokeRect(kButtonWidth + strokeOffset, top + strokeOffset, strokeWidth, strokeHeight);
-        self.context.strokeRect(self.canvas.width + strokeOffset - 2 * kButtonWidth, top + strokeOffset, strokeWidth, strokeHeight);
-        self.context.strokeRect(self.canvas.width + strokeOffset - kButtonWidth, top + strokeOffset, strokeWidth, strokeHeight);
+        self.context.strokeRect(self.buttonWidth + strokeOffset, top + strokeOffset, strokeWidth, strokeHeight);
+        self.context.strokeRect(self.canvas.width + strokeOffset - 2 * self.buttonWidth, top + strokeOffset, strokeWidth, strokeHeight);
+        self.context.strokeRect(self.canvas.width + strokeOffset - self.buttonWidth, top + strokeOffset, strokeWidth, strokeHeight);
         if (self.player.state !== PlayerState.Alive) {
             if (self.touchState.reset) {
                 self.context.fillStyle = "rgba(128,0,255,0.25)";
             }
-            self.context.fillRect(kButtonWidth * 2, top, canvas.width - kButtonWidth * 4, kButtonHeight);
-            self.context.strokeRect(kButtonWidth * 2 + strokeOffset, top + strokeOffset, canvas.width - (kButtonWidth * 4 + strokeOffset * 2), strokeHeight);
+            self.context.fillRect(self.buttonWidth * 2, top, canvas.width - self.buttonWidth * 4, self.buttonHeight);
+            self.context.strokeRect(self.buttonWidth * 2 + strokeOffset, top + strokeOffset, canvas.width - (self.buttonWidth * 4 + strokeOffset * 2), strokeHeight);
         }
         self.context.fillStyle = "rgba(128,0,0,0.25)";
         if (self.touchState.left) {
-            self.context.fillRect(0, top, kButtonWidth, kButtonHeight);
+            self.context.fillRect(0, top, self.buttonWidth, self.buttonHeight);
         }
         if (self.touchState.right) {
-            self.context.fillRect(kButtonWidth, top, kButtonWidth, kButtonHeight);
+            self.context.fillRect(self.buttonWidth, top, self.buttonWidth, self.buttonHeight);
         }
         if (self.touchState.down) {
-            self.context.fillRect(self.canvas.width - 2 * kButtonWidth, top, kButtonWidth, kButtonHeight);
+            self.context.fillRect(self.canvas.width - 2 * self.buttonWidth, top, self.buttonWidth, self.buttonHeight);
         }
         if (self.touchState.up) {
-            self.context.fillRect(self.canvas.width - kButtonWidth, top, kButtonWidth, kButtonHeight);
+            self.context.fillRect(self.canvas.width - self.buttonWidth, top, self.buttonWidth, self.buttonHeight);
         }
         self.context.fillStyle = "rgba(255,255,255,0.5)";
-        self.context.fillText("LEFT", HALF_WIDTH, yText);
-        self.context.fillText("RIGHT", HALF_WIDTH + kButtonWidth, yText);
-        self.context.fillText("STOP", canvas.width - HALF_WIDTH - kButtonWidth, yText);
-        self.context.fillText("GO", canvas.width - HALF_WIDTH, yText);
+
+        self.context.fillText("LEFT", halfWidth, yText);
+        self.context.fillText("RIGHT", halfWidth + self.buttonWidth, yText);
+        self.context.fillText("STOP", canvas.width - halfWidth - self.buttonWidth, yText);
+        self.context.fillText("GO", canvas.width - halfWidth, yText);
         if (self.player.state !== PlayerState.Alive) {
             self.context.fillStyle = "rgba(255,255,255,0.5)";
             self.context.fillText("START", canvas.width * 0.5, yText);
         }
+
+        self.context.fillStyle = "rgba(0,255,0,0.1)";
+        for (var i = 0; i < self.touches.length; ++i) {
+            var touch = self.touches[i];
+            var size = 5;
+            self.context.fillRect(touch.pageX - size, touch.pageY - size, size * 2, size * 2);
+        }
+
         self.context.restore();
     }
-    
+
     this.draw = function() {
         self.canvas.width  = window.innerWidth;
         self.canvas.height = window.innerHeight;
@@ -743,15 +755,19 @@ var Scrace = function () {
             self.gates[i].draw(self.context, self.scroll, i == self.gates.length - 1);
         }
         self.player.draw(self.context, self.scroll);
-        
+
         self.drawHud();
-        
-        self.drawTouchControls();
+
+        if (window.ontouchstart !== undefined) {
+            self.buttonWidth = self.canvas.width * 0.125;
+            self.buttonHeight = self.canvas.height * 0.05;
+            self.drawTouchControls();
+        }
     }
 };
 
 window.onload = function(e) {
-    console.log("window.onload", e, Date.now())    
+    console.log("window.onload", e, Date.now())
     var scrace = new Scrace();
     scrace.loadCurrentLevel();
     window.setInterval(scrace.update, 16);
