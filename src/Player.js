@@ -29,18 +29,18 @@ function getDirection(angle) {
     return new Vector(Math.cos(angle), Math.sin(angle));
 }
 
-function determineThrust(keyboardState) {
+function determineThrust(keyboardState, touchState) {
     var thrust = 0;
-    if (keyboardState.isKeyDown(Keys.Up)) {
+    if (keyboardState.isKeyDown(Keys.Up) || touchState.up) {
         thrust |= Thrusters.Accelerate;
     }
-    if (keyboardState.isKeyDown(Keys.Down)) {
+    if (keyboardState.isKeyDown(Keys.Down) || touchState.down) {
         thrust |= Thrusters.Break;
     }
-    if (keyboardState.isKeyDown(Keys.Left)) {
+    if (keyboardState.isKeyDown(Keys.Left) || touchState.left) {
         thrust |= Thrusters.RotateLeft;
     }
-    if (keyboardState.isKeyDown(Keys.Right)) {
+    if (keyboardState.isKeyDown(Keys.Right) || touchState.right) {
         thrust |= Thrusters.RotateRight;
     }
     return thrust;
@@ -119,11 +119,11 @@ var Player = function () {
         self.state = PlayerState.Alive;
     };
 
-    this.update = function (elapsed, planets, debris, gates, keyboardState) {
+    this.update = function (elapsed, planets, debris, gates, keyboardState, touchState) {
         var before = self.location.clone(),
             i = 0;
         if (self.state === PlayerState.Dead || self.state === PlayerState.Finished) {
-            if (keyboardState.isKeyDown(Keys.Reset)) {
+            if (keyboardState.isKeyDown(Keys.Reset) || touchState.reset) {
                 console.log("Reset requested");
                 self.state = PlayerState.Reset;
             }
@@ -149,7 +149,7 @@ var Player = function () {
         self.rightRetro = false;
         self.leftRearRetro = false;
         self.rightRearRetro = false;
-        var thrust = determineThrust(keyboardState);
+        var thrust = determineThrust(keyboardState, touchState);
         if ((thrust & Thrusters.RotateLeft) === Thrusters.RotateLeft) {
             self.angle -= kManouverPower * elapsed;
             self.rightRetro = true;

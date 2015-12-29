@@ -53,6 +53,8 @@ var Scrace = function () {
     var kWarmupDelay = 1000,
         kLightLength = 1000,
         kTotalStartDelay = kWarmupDelay + 2 * kLightLength,
+        kButtonWidth = 80,
+        kButtonHeight = 40,
         uiBatch = new ImageBatch("images/ui/");
     
     this.starterAmberOff = uiBatch.load("AmberLightOff.png");
@@ -101,7 +103,20 @@ var Scrace = function () {
     this.context.font = "15px monospace";
     this.keyboardState = new KeyboardState(window);
     this.mouseState = new MouseState(this.canvas);
+    this.touchState = {
+        up: false,
+        down: false,
+        left: false,
+        right: false,
+        reset: false
+    }
+    this.touches = [];
     this.scroll = new Vector(this.canvas.width * 0.5, this.canvas.height * 0.5);
+    
+    this.canvas.addEventListener("touchstart", this.updateTouch);
+    this.canvas.addEventListener("touchend", this.updateTouch);
+    this.canvas.addEventListener("touchmove", this.updateTouch);
+    this.canvas.addEventListener("touchcancel", this.updateTouch);
    
     var self = this;
 
@@ -206,9 +221,48 @@ var Scrace = function () {
         }
     }
     
-    this.raceStarted = function() {
+    this.raceStarted = function () {
         return self.starter != null && self.starter >= kTotalStartDelay;
     }
+   
+    this.updateTouch = function (event) {
+        self.touches = event.touches;
+    }
+    
+    this.updateButtons = function() {
+        self.touchState.up = false;
+        self.touchState.down = false;
+        self.touchState.left = false;
+        self.touchState.right = false;
+        self.touchState.reset = false;
+    
+        for (var i = 0; i < self.touches.touches; ++i) {
+            self.checkPointer(self.touches.touches[i]);
+        }
+        if (self.mouseState.left) {
+            self.checkPointer({
+                clientX: self.mouseState.location.x,
+                clientY: self.mouseState.location.y
+            });
+        }
+    };
+    
+    this.checkPointer = function (pointer) {
+        console.log("Checking: " + pointer.clientX + ", " + pointer.clientY);
+        if (pointer.clientY > self.canvas.height - kButtonHeight) {
+            if (pointer.clientX < kButtonWidth) {
+                self.touchState.left = true;
+            } else if (pointer.clientX < 2 * kButtonWidth) {
+                self.touchState.right = true;
+            } else if (pointer.clientX < self.canvas.width - 2 * kButtonWidth) {
+                self.touchState.reset = true;
+            } else if (pointer.clientX < self.canvas.width - kButtonWidth) {
+                self.touchState.down = true;
+            } else {
+                self.touchState.up = true;
+            }
+        }
+    };
    
     this.update = function() {
         var i = 0;
@@ -216,6 +270,8 @@ var Scrace = function () {
         var delta = now - self.lastTime;
         var trueDelta = delta;
         var player = self.player;
+        
+        self.updateButtons();
         
         if(self.paused) {
             delta = 0;
@@ -244,7 +300,7 @@ var Scrace = function () {
             self.starter += delta;
         }
         
-        player.update((self.paused || !self.raceStarted()) ? 0 : delta, self.planets, self.debris, self.gates, self.keyboardState);
+        player.update((self.paused || !self.raceStarted()) ? 0 : delta, self.planets, self.debris, self.gates, self.keyboardState, self.touchState);
         
                 
         var raceOver = player.state == PlayerState.Reset ||
@@ -356,7 +412,7 @@ var Scrace = function () {
         }
         if (self.currentEdit == null) {
             if (self.mouseState.left) {
-                var location = self.toSpace(self.mouseState);
+                var location = self.toSpace(self.mouseState.location);
                 self.editGate = null;
                 self.editDebris = null;
                 self.editPlanet = self.planetAt(location);
@@ -420,12 +476,12 @@ var Scrace = function () {
         } else if (!self.mouseState.left) {
             self.currentEdit = null;
         } else {
-            self.currentEdit(self.toSpace(self.mouseState));
+            self.currentEdit(self.toSpace(self.mouseState.location));
         }
     }
     
-    this.toSpace = function(mouseState) {
-        return subVectors(mouseState.location, self.scroll);
+    this.toSpace = function(clientLocation) {
+        return subVectors(clientLocation, self.scroll);
     }
     
     this.planetAt = function (location) {
@@ -491,8 +547,8 @@ var Scrace = function () {
         };
     };
 
-    this.createGate = function(startLocation) {
-        self.editGate = new Gate(self.toSpace(self.mouseState), self.lastGateAngle);
+    this.createGate = function(location) {
+        self.editGate = new Gate(location, self.lastGateAngle);
         self.gates.push(self.editGate);
     };
     
@@ -620,6 +676,58 @@ var Scrace = function () {
         }
     }
     
+    this.drawTouchControls = function() {
+        var HALF_WIDTH = kButtonWidth * 0.5,
+            FONT_SIZE = 24,
+            top = self.canvas.height - kButtonHeight,
+            yText = self.canvas.height - 12,
+            strokeOffset = 2,
+            strokeHeight = kButtonHeight - 2 * strokeOffset,
+            strokeWidth = kButtonWidth - 2 * strokeOffset;
+
+        self.context.save();
+        self.context.textAlign = "center";
+        self.context.font = FONT_SIZE + "px monospace";
+        self.context.fillStyle = "rgba(0,0,255,0.25)";
+        self.context.strokeStyle = "rgba(128,128,255,0.25)";
+        self.context.fillRect(0, top, kButtonWidth * 2, kButtonHeight);
+        self.context.fillRect(self.canvas.width - kButtonWidth * 2, top, kButtonWidth * 2, kButtonHeight);
+        self.context.strokeRect(strokeOffset, top + strokeOffset, strokeWidth, strokeHeight);
+        self.context.strokeRect(kButtonWidth + strokeOffset, top + strokeOffset, strokeWidth, strokeHeight);
+        self.context.strokeRect(self.canvas.width + strokeOffset - 2 * kButtonWidth, top + strokeOffset, strokeWidth, strokeHeight);
+        self.context.strokeRect(self.canvas.width + strokeOffset - kButtonWidth, top + strokeOffset, strokeWidth, strokeHeight);
+        if (self.player.state !== PlayerState.Alive) {
+            if (self.touchState.reset) {
+                self.context.fillStyle = "rgba(128,0,255,0.25)";
+            }
+            self.context.fillRect(kButtonWidth * 2, top, canvas.width - kButtonWidth * 4, kButtonHeight);
+            self.context.strokeRect(kButtonWidth * 2 + strokeOffset, top + strokeOffset, canvas.width - (kButtonWidth * 4 + strokeOffset * 2), strokeHeight);
+        }
+        self.context.fillStyle = "rgba(128,0,0,0.25)";
+        if (self.touchState.left) {
+            self.context.fillRect(0, top, kButtonWidth, kButtonHeight);
+        }
+        if (self.touchState.right) {
+            self.context.fillRect(kButtonWidth, top, kButtonWidth, kButtonHeight);
+        }
+        if (self.touchState.down) {
+            self.context.fillRect(self.canvas.width - 2 * kButtonWidth, top, kButtonWidth, kButtonHeight);
+        }
+        if (self.touchState.up) {
+            self.context.fillRect(self.canvas.width - kButtonWidth, top, kButtonWidth, kButtonHeight);
+        }
+        self.context.fillStyle = "rgba(255,255,255,0.5)";
+        self.context.fillText("LEFT", HALF_WIDTH, yText);
+        self.context.fillText("RIGHT", HALF_WIDTH + kButtonWidth, yText);
+        self.context.fillText("STOP", canvas.width - HALF_WIDTH - kButtonWidth, yText);
+        self.context.fillText("GO", canvas.width - HALF_WIDTH, yText);
+        if (self.player.state !== PlayerState.Alive) {
+            self.context.fillStyle = "rgba(255,255,255,0.5)";
+            self.context.fillText("START", canvas.width * 0.5, yText);
+        }
+        self.context.restore();
+    }
+    
     this.draw = function() {
         self.canvas.width  = window.innerWidth;
         self.canvas.height = window.innerHeight;
@@ -637,6 +745,8 @@ var Scrace = function () {
         self.player.draw(self.context, self.scroll);
         
         self.drawHud();
+        
+        self.drawTouchControls();
     }
 };
 
