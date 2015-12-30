@@ -53,6 +53,7 @@ var Scrace = function () {
     var kWarmupDelay = 1000,
         kLightLength = 1000,
         kTotalStartDelay = kWarmupDelay + 2 * kLightLength,
+        kTracks = 5,
         uiBatch = new ImageBatch("images/ui/");
 
     this.starterAmberOff = uiBatch.load("AmberLightOff.png");
@@ -106,7 +107,8 @@ var Scrace = function () {
         down: false,
         left: false,
         right: false,
-        reset: false
+        reset: false,
+        track: 0
     }
     this.touches = [];
     this.buttonWidth = 80,
@@ -239,6 +241,7 @@ var Scrace = function () {
         self.touchState.left = false;
         self.touchState.right = false;
         self.touchState.reset = false;
+        self.touchState.track = 0;
 
         for (var i = 0; i < self.touches.length; ++i) {
             self.checkPointer(self.touches[i]);
@@ -263,6 +266,16 @@ var Scrace = function () {
                 self.touchState.down = true;
             } else {
                 self.touchState.up = true;
+            }
+        } else if (pointer.pageY < self.buttonHeight) {
+            var edge = self.canvas.width * 0.5 - (self.buttonWidth * 2.5);
+            if (pointer.pageX > edge) {
+                for (var t = 1; t <= kTracks; ++t) {
+                    edge += self.buttonWidth;
+                    if (pointer.pageX < edge) {
+                        self.touchState.track = t;
+                    }
+                }
             }
         }
     };
@@ -334,11 +347,12 @@ var Scrace = function () {
             }
             self.starter = null;
             if (!self.resetting) {
-                for (var k = "1".charCodeAt(); k <= "5".charCodeAt(); ++k) {
-                    if (self.keyboardState.isKeyDown(k)) {
+                for (var k = 1; k <= kTracks; ++k) {
+                    if (self.touchState.track == k || self.keyboardState.isKeyDown(k.toString().charCodeAt())) {
                         self.resetting = true;
-                        self.level = String.fromCharCode(k);
+                        self.level = k
                         self.loadCurrentLevel();
+                        break;
                     }
                 }
 
@@ -686,7 +700,8 @@ var Scrace = function () {
             yText = self.canvas.height + (fontSize * 0.4) - (self.buttonHeight * 0.5),
             strokeOffset = 2,
             strokeHeight = self.buttonHeight - 2 * strokeOffset,
-            strokeWidth = self.buttonWidth - 2 * strokeOffset;
+            strokeWidth = self.buttonWidth - 2 * strokeOffset,
+            i = 0, t = 0;
 
         self.context.save();
         self.context.textAlign = "center";
@@ -704,7 +719,20 @@ var Scrace = function () {
                 self.context.fillStyle = "rgba(128,0,255,0.25)";
             }
             self.context.fillRect(self.buttonWidth * 2, top, canvas.width - self.buttonWidth * 4, self.buttonHeight);
-            self.context.strokeRect(self.buttonWidth * 2 + strokeOffset, top + strokeOffset, canvas.width - (self.buttonWidth * 4 + strokeOffset * 2), strokeHeight);
+            self.context.strokeRect(
+                self.buttonWidth * 2 + strokeOffset, top + strokeOffset,
+                canvas.width - (self.buttonWidth * 4 + strokeOffset * 2), strokeHeight
+            );
+            
+            var left = canvas.width * 0.5 - (halfWidth * 5);
+            for (t = 0; t < kTracks; ++t) {
+                self.context.fillRect(left, 0, self.buttonWidth, self.buttonHeight);
+                self.context.strokeRect(
+                    left + strokeOffset, strokeOffset,
+                    self.buttonWidth - 2 * strokeOffset, self.buttonHeight - 2 * strokeOffset
+                );
+                left += self.buttonWidth;
+            }
         }
         self.context.fillStyle = "rgba(128,0,0,0.25)";
         if (self.touchState.left) {
@@ -726,12 +754,16 @@ var Scrace = function () {
         self.context.fillText("STOP", canvas.width - halfWidth - self.buttonWidth, yText);
         self.context.fillText("GO", canvas.width - halfWidth, yText);
         if (self.player.state !== PlayerState.Alive) {
-            self.context.fillStyle = "rgba(255,255,255,0.5)";
             self.context.fillText("START", canvas.width * 0.5, yText);
+            var offset = self.canvas.width * 0.5 - (halfWidth * 4);
+            for (t = 1; t <= kTracks; ++t) {
+                self.context.fillText(t.toString(), offset, (self.buttonHeight + fontSize) * 0.5);
+                offset += self.buttonWidth;
+            }
         }
 
         self.context.fillStyle = "rgba(0,255,0,0.1)";
-        for (var i = 0; i < self.touches.length; ++i) {
+        for (i = 0; i < self.touches.length; ++i) {
             var touch = self.touches[i];
             var size = 5;
             self.context.fillRect(touch.pageX - size, touch.pageY - size, size * 2, size * 2);
@@ -760,7 +792,7 @@ var Scrace = function () {
 
         if (window.ontouchstart !== undefined) {
             self.buttonWidth = self.canvas.width * 0.125;
-            self.buttonHeight = self.canvas.height * 0.05;
+            self.buttonHeight = Math.max(self.canvas.height * 0.05, self.buttonWidth * 0.75);
             self.drawTouchControls();
         }
     }
