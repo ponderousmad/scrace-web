@@ -7,11 +7,13 @@ var KeyboardState = function (element) {
     element.onkeydown = function (e) {
         e = e || window.event;
         self.pressed[e.keyCode] = true;
+        e.preventDefault();
     };
 
     element.onkeyup = function (e) {
         e = e || window.event;
         delete self.pressed[e.keyCode];
+        e.preventDefault();
     };
 };
 
