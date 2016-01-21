@@ -129,10 +129,11 @@ var Scrace = function () {
     this.loadLevel = function (resource) {
         var request = new XMLHttpRequest();
         request.open("GET", resource, true);
-        request.responseType = "json";
+        request.responseType = "text";
         request.onload = function () {
             console.log("Loading " + resource);
-            var planetData = request.response["Planets"];
+            var responseData = JSON.parse(request.response)
+            var planetData = responseData["Planets"];
             self.editPlanet = null;
             self.planets.length = 0;
             for (var i = 0; i < planetData.length; ++i) {
@@ -142,7 +143,7 @@ var Scrace = function () {
                 self.planets.push(new Planet(type, location, planet.gravity));
             }
 
-            var debrisData = request.response["Debris"];
+            var debrisData = responseData["Debris"];
             self.editDebris = null;
             self.debris.length = 0;
             for (i = 0; i < debrisData.length; ++i) {
@@ -153,7 +154,7 @@ var Scrace = function () {
                 self.debris.push(new Debris(type, location, velocity));
             }
 
-            var gatesData = request.response["Gates"];
+            var gatesData = responseData["Gates"];
             self.editGate = null;
             self.gates.length = 0;
             for (var i = 0; i < gatesData.length; ++i) {
@@ -771,10 +772,26 @@ var Scrace = function () {
 
         self.context.restore();
     }
+    
+    function safeWidth() {
+        var inner = window.innerWidth,
+            client = document.documentElement.clientWidth || inner,
+            body = document.getElementsByTagName('body')[0].clientWidth || inner;
+            
+        return Math.min(inner, client, body);
+    }
+    
+    function safeHeight() {
+        var inner = window.innerHeight,
+            client = document.documentElement.clientHeight || inner,
+            body = document.getElementsByTagName('body')[0].clientHeight || inner;
+            
+        return Math.min(inner, client, body);
+    }
 
     this.draw = function() {
-        self.canvas.width  = window.innerWidth;
-        self.canvas.height = window.innerHeight;
+        self.canvas.width  = safeWidth();
+        self.canvas.height = safeHeight();
         requestAnimationFrame(self.draw);
         self.starfield.draw(self.context, self.scroll, self.canvas.width, self.canvas.height);
         for (var i = 0; i < self.planets.length; ++i) {
