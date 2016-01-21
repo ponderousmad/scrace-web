@@ -786,7 +786,7 @@ var Scrace = function () {
             client = document.documentElement.clientHeight || inner,
             body = document.getElementsByTagName('body')[0].clientHeight || inner;
             
-        return Math.min(inner, client, body);
+        return Math.min(inner, client, body) - 5;
     }
 
     this.draw = function() {
