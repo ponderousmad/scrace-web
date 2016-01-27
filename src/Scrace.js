@@ -132,7 +132,7 @@ var Scrace = function () {
         request.responseType = "text";
         request.onload = function () {
             console.log("Loading " + resource);
-            var responseData = JSON.parse(request.response)
+            var responseData = JSON.parse(request.response);
             var planetData = responseData["Planets"];
             self.editPlanet = null;
             self.planets.length = 0;
@@ -204,7 +204,7 @@ var Scrace = function () {
         var filteredDebris = []
         for (var i = self.debris.length - 1; i >= 0; --i) {
             if (self.debris[i].isPlayerDebris()) {
-                self.debris.splice(i, 1)
+                self.debris.splice(i, 1);
             } else {
                 self.debris[i].reset();
             }
@@ -233,6 +233,7 @@ var Scrace = function () {
     }
 
     this.updateTouch = function (event) {
+        audioNoteOn();
         self.touches = event.touches;
     }
 

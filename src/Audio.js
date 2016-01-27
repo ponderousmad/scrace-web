@@ -1,11 +1,32 @@
 "use strict";
 
-var gAudioContext = null;
+var gAudioContext = null,
+    gNoteOn = false
 try {
     gAudioContext = new (window.AudioContext || window.webkitAudioContext)();
 } catch (error) {
     console.log("Error initializing audio:");
     console.log(error);
+}
+
+function audioNoteOn() {
+    if (!gNoteOn) {
+        gNoteOn = true;
+        if(gAudioContext !== null) {
+            // Trick to enable audio without downloading a sound from:
+            // https://paulbakaus.com/tutorials/html5/web-audio-on-ios/
+            // create empty buffer
+            var buffer = gAudioContext.createBuffer(1, 1, 22050);
+            var source = gAudioContext.createBufferSource();
+            source.buffer = buffer;
+
+            // connect to output (your speakers)
+            source.connect(gAudioContext.destination);
+
+            // play the file
+            source.noteOn(0);
+        }
+    }
 }
 
 var SoundEffect = function (resource) {
