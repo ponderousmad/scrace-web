@@ -1,7 +1,7 @@
 "use strict";
 
 function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min)) + min;
+    return Math.min(Math.floor(Math.random() * (max - min)) + min, max - 1);
 }
 
 function Starfield(width, height, density, maxDepth, infrequentAreFar) {
